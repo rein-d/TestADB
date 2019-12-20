@@ -12,8 +12,10 @@ import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.OutputStreamWriter;
 import java.math.BigDecimal;
 import java.net.URL;
+import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -23,8 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
-import javax.net.ssl.HttpsURLConnection;
 
 import ru.evotor.framework.component.PaymentPerformer;
 import ru.evotor.framework.core.Error;
@@ -100,17 +100,25 @@ public class MainActivity extends IntegrationActivity {
         findViewById(R.id.button6).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final String path = "https://webhook.site/e50dde35-94d6-40e1-966b-8045565845ac";
+
                 Thread thread = new Thread(new Runnable(){
                     @Override
                     public void run() {
                         try {
                             //Your code goes here
-                            URL url = new URL(path);
-                            HttpsURLConnection c = (HttpsURLConnection)url.openConnection();
-                            c.setRequestMethod("POST");
-                            c.setReadTimeout(10000);
-                            c.connect();
+                            String url = "https://webhook.site/6830f30c-1abf-4691-a103-e431e8e20025";
+                            URLConnection connection = new URL(url).openConnection();
+                            connection.setDoOutput(true);
+
+                            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                            OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
+                            JSONObject object = new JSONObject();
+                            object.put("someSuperKey", "AWESOME RECEIPT OPEN");
+                            String reqBody = "test123";
+                            writer.write(reqBody);
+                            writer.close();
+
+
                         } catch (Exception e) {
                             Log.e(TAG, e.getMessage());
                         }
@@ -190,10 +198,10 @@ public class MainActivity extends IntegrationActivity {
         //1
         payments.put(new Payment(
                 UUID.randomUUID().toString(),
-                new BigDecimal(50000 ),
+                new BigDecimal(9300 ),
                 null,
                 new PaymentPerformer(
-                        new PaymentSystem(PaymentType.CASH, "Оплата", "My"),
+                        new PaymentSystem(PaymentType.ELECTRON, "Internet", "12424"),
                         "имя пакета",
                         "название компонента",
                         "app_uuid",
@@ -202,7 +210,7 @@ public class MainActivity extends IntegrationActivity {
                 null,
                 null,
                 null
-        ), new BigDecimal(50000 ));
+        ), new BigDecimal(9300 ));
 
         PrintGroup printGroup = new PrintGroup(UUID.randomUUID().toString(),
                 PrintGroup.Type.CASH_RECEIPT, null, null, null, null, false, null);

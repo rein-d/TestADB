@@ -3,13 +3,12 @@ package com.rein.android.ReynTestApp;
 import android.annotation.SuppressLint;
 import android.net.http.SslError;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-
+import androidx.appcompat.app.AppCompatActivity;
 
 
 public class ActivityWebView extends AppCompatActivity {
@@ -28,7 +27,7 @@ public class ActivityWebView extends AppCompatActivity {
             settings.setJavaScriptEnabled(true);
             settings.setDomStorageEnabled(true);
             myWebView.setWebViewClient(new SSLTolerentWebViewClient());
-            myWebView.loadUrl("https://support.evotor.ru/hc/ru");
+            myWebView.loadUrl("https://google.com");
 
         }
 
