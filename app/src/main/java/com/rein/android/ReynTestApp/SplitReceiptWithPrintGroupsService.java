@@ -2,7 +2,8 @@ package com.rein.android.ReynTestApp;
 
 
 import android.os.RemoteException;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 import org.jetbrains.annotations.Nullable;
 
