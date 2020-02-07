@@ -12,10 +12,14 @@ import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -32,9 +36,11 @@ import ru.evotor.framework.core.IntegrationActivity;
 import ru.evotor.framework.core.IntegrationException;
 import ru.evotor.framework.core.IntegrationManagerCallback;
 import ru.evotor.framework.core.IntegrationManagerFuture;
-import ru.evotor.framework.core.action.command.open_receipt_command.OpenSellReceiptCommand;
+import ru.evotor.framework.core.action.command.open_receipt_command.OpenPaybackReceiptCommand;
 import ru.evotor.framework.core.action.command.print_receipt_command.PrintReceiptCommandResult;
 import ru.evotor.framework.core.action.command.print_receipt_command.PrintSellReceiptCommand;
+import ru.evotor.framework.core.action.command.print_z_report_command.PrintZReportCommand;
+import ru.evotor.framework.core.action.command.print_z_report_command.PrintZReportCommandResult;
 import ru.evotor.framework.core.action.event.receipt.changes.position.PositionAdd;
 import ru.evotor.framework.core.action.event.receipt.changes.position.SetExtra;
 import ru.evotor.framework.kkt.api.DocumentRegistrationCallback;
@@ -49,13 +55,12 @@ import ru.evotor.framework.receipt.PrintGroup;
 import ru.evotor.framework.receipt.Receipt;
 import ru.evotor.framework.receipt.ReceiptApi;
 import ru.evotor.framework.receipt.SettlementType;
-import ru.evotor.framework.receipt.TaxNumber;
 import ru.evotor.framework.receipt.correction.CorrectionType;
 import ru.evotor.framework.receipt.position.SettlementMethod;
 import ru.evotor.framework.receipt.position.VatRate;
 
-import static android.content.ContentValues.TAG;
 import static ru.evotor.framework.receipt.TaxationSystem.SIMPLIFIED_INCOME;
+import static ru.evotor.framework.receipt.TaxationSystem.SINGLE_AGRICULTURE;
 
 public class MainActivity extends IntegrationActivity {
 
@@ -98,33 +103,49 @@ public class MainActivity extends IntegrationActivity {
         });
 
         findViewById(R.id.button6).setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View view) {
+                new Thread(new Runnable() {
 
-                Thread thread = new Thread(new Runnable(){
                     @Override
                     public void run() {
                         try {
-                            //Your code goes here
-                            String url = "https://webhook.site/6830f30c-1abf-4691-a103-e431e8e20025";
-                            URLConnection connection = new URL(url).openConnection();
-                            connection.setDoOutput(true);
-
-                            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-                            OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
-                            JSONObject object = new JSONObject();
-                            object.put("someSuperKey", "AWESOME RECEIPT OPEN");
-                            String reqBody = "test123";
-                            writer.write(reqBody);
-                            writer.close();
+                            GetText();
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    }).start();
 
 
-                        } catch (Exception e) {
-                            Log.e(TAG, e.getMessage());
+            }
+        });
+        findViewById(R.id.close_session).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new PrintZReportCommand().process(MainActivity.this, new IntegrationManagerCallback() {
+                    @Override
+                    public void run(IntegrationManagerFuture future) {
+                        try {
+                            IntegrationManagerFuture.Result result = future.getResult();
+                            switch (result.getType()) {
+                                case OK:
+                                    PrintZReportCommandResult printSellReceiptResult = PrintZReportCommandResult.create(result.getData());
+                                    break;
+                                case ERROR:
+                                    Toast.makeText(MainActivity.this, result.getError().getMessage(), Toast.LENGTH_LONG).show();
+                                    Error error = result.getError();
+                                    Log.i(getPackageName(), "e.code: " + error.getCode() + "; e.msg: " + error.getMessage());
+                                    //alertMainValue(error.getMessage());
+                                    break;
+                            }
+                        } catch (IntegrationException e) {
+
+                            e.printStackTrace();
                         }
                     }
                 });
-                thread.start();
             }
         });
 
@@ -135,6 +156,68 @@ public class MainActivity extends IntegrationActivity {
 
 
 */
+
+
+    public  void  GetText()  throws UnsupportedEncodingException {
+
+        String text = "";
+        BufferedReader reader = null;
+
+        // Send data
+        try {
+
+            // Defined URL  where to send data
+            URL url = new URL("https://webhook.site/15e338d2-4fd5-48c5-8db5-c07b5669051c");
+            String data = URLEncoder.encode("name", "UTF-8")
+                    + ":" + URLEncoder.encode("qnEDt8k5Iv6Szw9Uoe11nVHj1J09V70Bn2v6Uavj8J1PHlF89k6fb7N9i4rcpv9vJWwf7Fo9MsbVM9zeVhhIyJJm4lpvVAVclWgyEGcMN3lTH3s8B5b0T2X2mEjKB6Lupx2aMd7WFkkcl71I1m60gt6Ez6tJi4Sd2ERwIV1YJJerd59Z285Oq7ntKPh6LtVNAFjkEJXpil9O6g7LZ5JB7B8ydr71Vn3I4hyW5m88q8B9r58U7i40Xj271c80oypm33nIDYeAapDc1yqd5ETNX3Z0qP7dSb1Fpe3QHj7eyJps3tZ5540NbBj8SC4OL964W1174X01JLWBWqf5qnNdMYUhJonALQ3nbBt1X3jJxEd1ERmFYN5V14M2845sbcidOTMtoH5w2G62mTb1W484VJp1KSulV7tOtnVR8M6a9VFk0cw0gV432GN9XEa6Ys6snE2h2091s5QAnOO9NFRzqV618lFz38t6Fo028SgX5MM1bLYfg4Lm68Wx26A5VXHaZWYuqv6cRjdjNVUu34jnZ29ax32qTP8J20F1p1pbq5y5vIFIFyAShhzzX4SMbU02R4mUskpV692aZS8Z06AyQiQh9D50QuIGSn5IEEyL12k5r09416cO5ir8meJqltPif1zhe62o73c6104x45RjULS0si596a2b6z9u18zm6wjilvU172Hy7l3lC2A74C41FCUA86fjvX6tn3o37XWgK4rFj8GBeLpCWffzTNzktRFGL9vUwB2430fVaEBgjiJtI38ym388Wx8Io07ArvOth01dGSKK465971H13sqd3LHShncU7MUI0uieoW64ZNTg5ySLqgU35tM6p715Q6Q3IOkT8B6OoB62R21eIYDzG2P655G74SL21o8v73U58Bf356DS7fsvC6MH0F61K4RnDBN0k95553Dns4WW5ifRaU3TH06y23ly0T3VIsu7N1bfAZ2kpPKk048OtV88qF43vklavYTM7DKpd57gj93y", "UTF-8")
+                    + URLEncoder.encode("qnEDt8k5Iv6Szw9Uoe11nVHj1J09V70Bn2v6Uavj8J1PHlF89k6fb7N9i4rcpv9vJWwf7Fo9MsbVM9zeVhhIyJJm4lpvVAVclWgyEGcMN3lTH3s8B5b0T2X2mEjKB6Lupx2aMd7WFkkcl71I1m60gt6Ez6tJi4Sd2ERwIV1YJJerd59Z285Oq7ntKPh6LtVNAFjkEJXpil9O6g7LZ5JB7B8ydr71Vn3I4hyW5m88q8B9r58U7i40Xj271c80oypm33nIDYeAapDc1yqd5ETNX3Z0qP7dSb1Fpe3QHj7eyJps3tZ5540NbBj8SC4OL964W1174X01JLWBWqf5qnNdMYUhJonALQ3nbBt1X3jJxEd1ERmFYN5V14M2845sbcidOTMtoH5w2G62mTb1W484VJp1KSulV7tOtnVR8M6a9VFk0cw0gV432GN9XEa6Ys6snE2h2091s5QAnOO9NFRzqV618lFz38t6Fo028SgX5MM1bLYfg4Lm68Wx26A5VXHaZWYuqv6cRjdjNVUu34jnZ29ax32qTP8J20F1p1pbq5y5vIFIFyAShhzzX4SMbU02R4mUskpV692aZS8Z06AyQiQh9D50QuIGSn5IEEyL12k5r09416cO5ir8meJqltPif1zhe62o73c6104x45RjULS0si596a2b6z9u18zm6wjilvU172Hy7l3lC2A74C41FCUA86fjvX6tn3o37XWgK4rFj8GBeLpCWffzTNzktRFGL9vUwB2430fVaEBgjiJtI38ym388Wx8Io07ArvOth01dGSKK465971H13sqd3LHShncU7MUI0uieoW64ZNTg5ySLqgU35tM6p715Q6Q3IOkT8B6OoB62R21eIYDzG2P655G74SL21o8v73U58Bf356DS7fsvC6MH0F61K4RnDBN0k95553Dns4WW5ifRaU3TH06y23ly0T3VIsu7N1bfAZ2kpPKk048OtV88qF43vklavYTM7DKpd57gj93y", "UTF-8")
+                    + URLEncoder.encode("qnEDt8k5Iv6Szw9Uoe11nVHj1J09V70Bn2v6Uavj8J1PHlF89k6fb7N9i4rcpv9vJWwf7Fo9MsbVM9zeVhhIyJJm4lpvVAVclWgyEGcMN3lTH3s8B5b0T2X2mEjKB6Lupx2aMd7WFkkcl71I1m60gt6Ez6tJi4Sd2ERwIV1YJJerd59Z285Oq7ntKPh6LtVNAFjkEJXpil9O6g7LZ5JB7B8ydr71Vn3I4hyW5m88q8B9r58U7i40Xj271c80oypm33nIDYeAapDc1yqd5ETNX3Z0qP7dSb1Fpe3QHj7eyJps3tZ5540NbBj8SC4OL964W1174X01JLWBWqf5qnNdMYUhJonALQ3nbBt1X3jJxEd1ERmFYN5V14M2845sbcidOTMtoH5w2G62mTb1W484VJp1KSulV7tOtnVR8M6a9VFk0cw0gV432GN9XEa6Ys6snE2h2091s5QAnOO9NFRzqV618lFz38t6Fo028SgX5MM1bLYfg4Lm68Wx26A5VXHaZWYuqv6cRjdjNVUu34jnZ29ax32qTP8J20F1p1pbq5y5vIFIFyAShhzzX4SMbU02R4mUskpV692aZS8Z06AyQiQh9D50QuIGSn5IEEyL12k5r09416cO5ir8meJqltPif1zhe62o73c6104x45RjULS0si596a2b6z9u18zm6wjilvU172Hy7l3lC2A74C41FCUA86fjvX6tn3o37XWgK4rFj8GBeLpCWffzTNzktRFGL9vUwB2430fVaEBgjiJtI38ym388Wx8Io07ArvOth01dGSKK465971H13sqd3LHShncU7MUI0uieoW64ZNTg5ySLqgU35tM6p715Q6Q3IOkT8B6OoB62R21eIYDzG2P655G74SL21o8v73U58Bf356DS7fsvC6MH0F61K4RnDBN0k95553Dns4WW5ifRaU3TH06y23ly0T3VIsu7N1bfAZ2kpPKk048OtV88qF43vklavYTM7DKpd57gj93y", "UTF-8")
+                    + URLEncoder.encode("qnEDt8k5Iv6Szw9Uoe11nVHj1J09V70Bn2v6Uavj8J1PHlF89k6fb7N9i4rcpv9vJWwf7Fo9MsbVM9zeVhhIyJJm4lpvVAVclWgyEGcMN3lTH3s8B5b0T2X2mEjKB6Lupx2aMd7WFkkcl71I1m60gt6Ez6tJi4Sd2ERwIV1YJJerd59Z285Oq7ntKPh6LtVNAFjkEJXpil9O6g7LZ5JB7B8ydr71Vn3I4hyW5m88q8B9r58U7i40Xj271c80oypm33nIDYeAapDc1yqd5ETNX3Z0qP7dSb1Fpe3QHj7eyJps3tZ5540NbBj8SC4OL964W1174X01JLWBWqf5qnNdMYUhJonALQ3nbBt1X3jJxEd1ERmFYN5V14M2845sbcidOTMtoH5w2G62mTb1W484VJp1KSulV7tOtnVR8M6a9VFk0cw0gV432GN9XEa6Ys6snE2h2091s5QAnOO9NFRzqV618lFz38t6Fo028SgX5MM1bLYfg4Lm68Wx26A5VXHaZWYuqv6cRjdjNVUu34jnZ29ax32qTP8J20F1p1pbq5y5vIFIFyAShhzzX4SMbU02R4mUskpV692aZS8Z06AyQiQh9D50QuIGSn5IEEyL12k5r09416cO5ir8meJqltPif1zhe62o73c6104x45RjULS0si596a2b6z9u18zm6wjilvU172Hy7l3lC2A74C41FCUA86fjvX6tn3o37XWgK4rFj8GBeLpCWffzTNzktRFGL9vUwB2430fVaEBgjiJtI38ym388Wx8Io07ArvOth01dGSKK465971H13sqd3LHShncU7MUI0uieoW64ZNTg5ySLqgU35tM6p715Q6Q3IOkT8B6OoB62R21eIYDzG2P655G74SL21o8v73U58Bf356DS7fsvC6MH0F61K4RnDBN0k95553Dns4WW5ifRaU3TH06y23ly0T3VIsu7N1bfAZ2kpPKk048OtV88qF43vklavYTM7DKpd57gj93y", "UTF-8")
+                    + URLEncoder.encode("qnEDt8k5Iv6Szw9Uoe11nVHj1J09V70Bn2v6Uavj8J1PHlF89k6fb7N9i4rcpv9vJWwf7Fo9MsbVM9zeVhhIyJJm4lpvVAVclWgyEGcMN3lTH3s8B5b0T2X2mEjKB6Lupx2aMd7WFkkcl71I1m60gt6Ez6tJi4Sd2ERwIV1YJJerd59Z285Oq7ntKPh6LtVNAFjkEJXpil9O6g7LZ5JB7B8ydr71Vn3I4hyW5m88q8B9r58U7i40Xj271c80oypm33nIDYeAapDc1yqd5ETNX3Z0qP7dSb1Fpe3QHj7eyJps3tZ5540NbBj8SC4OL964W1174X01JLWBWqf5qnNdMYUhJonALQ3nbBt1X3jJxEd1ERmFYN5V14M2845sbcidOTMtoH5w2G62mTb1W484VJp1KSulV7tOtnVR8M6a9VFk0cw0gV432GN9XEa6Ys6snE2h2091s5QAnOO9NFRzqV618lFz38t6Fo028SgX5MM1bLYfg4Lm68Wx26A5VXHaZWYuqv6cRjdjNVUu34jnZ29ax32qTP8J20F1p1pbq5y5vIFIFyAShhzzX4SMbU02R4mUskpV692aZS8Z06AyQiQh9D50QuIGSn5IEEyL12k5r09416cO5ir8meJqltPif1zhe62o73c6104x45RjULS0si596a2b6z9u18zm6wjilvU172Hy7l3lC2A74C41FCUA86fjvX6tn3o37XWgK4rFj8GBeLpCWffzTNzktRFGL9vUwB2430fVaEBgjiJtI38ym388Wx8Io07ArvOth01dGSKK465971H13sqd3LHShncU7MUI0uieoW64ZNTg5ySLqgU35tM6p715Q6Q3IOkT8B6OoB62R21eIYDzG2P655G74SL21o8v73U58Bf356DS7fsvC6MH0F61K4RnDBN0k95553Dns4WW5ifRaU3TH06y23ly0T3VIsu7N1bfAZ2kpPKk048OtV88qF43vklavYTM7DKpd57gj93y", "UTF-8")
+                    + URLEncoder.encode("qnEDt8k5Iv6Szw9Uoe11nVHj1J09V70Bn2v6Uavj8J1PHlF89k6fb7N9i4rcpv9vJWwf7Fo9MsbVM9zeVhhIyJJm4lpvVAVclWgyEGcMN3lTH3s8B5b0T2X2mEjKB6Lupx2aMd7WFkkcl71I1m60gt6Ez6tJi4Sd2ERwIV1YJJerd59Z285Oq7ntKPh6LtVNAFjkEJXpil9O6g7LZ5JB7B8ydr71Vn3I4hyW5m88q8B9r58U7i40Xj271c80oypm33nIDYeAapDc1yqd5ETNX3Z0qP7dSb1Fpe3QHj7eyJps3tZ5540NbBj8SC4OL964W1174X01JLWBWqf5qnNdMYUhJonALQ3nbBt1X3jJxEd1ERmFYN5V14M2845sbcidOTMtoH5w2G62mTb1W484VJp1KSulV7tOtnVR8M6a9VFk0cw0gV432GN9XEa6Ys6snE2h2091s5QAnOO9NFRzqV618lFz38t6Fo028SgX5MM1bLYfg4Lm68Wx26A5VXHaZWYuqv6cRjdjNVUu34jnZ29ax32qTP8J20F1p1pbq5y5vIFIFyAShhzzX4SMbU02R4mUskpV692aZS8Z06AyQiQh9D50QuIGSn5IEEyL12k5r09416cO5ir8meJqltPif1zhe62o73c6104x45RjULS0si596a2b6z9u18zm6wjilvU172Hy7l3lC2A74C41FCUA86fjvX6tn3o37XWgK4rFj8GBeLpCWffzTNzktRFGL9vUwB2430fVaEBgjiJtI38ym388Wx8Io07ArvOth01dGSKK465971H13sqd3LHShncU7MUI0uieoW64ZNTg5ySLqgU35tM6p715Q6Q3IOkT8B6OoB62R21eIYDzG2P655G74SL21o8v73U58Bf356DS7fsvC6MH0F61K4RnDBN0k95553Dns4WW5ifRaU3TH06y23ly0T3VIsu7N1bfAZ2kpPKk048OtV88qF43vklavYTM7DKpd57gj93y", "UTF-8")
+                    + URLEncoder.encode("qnEDt8k5Iv6Szw9Uoe11nVHj1J09V70Bn2v6Uavj8J1PHlF89k6fb7N9i4rcpv9vJWwf7Fo9MsbVM9zeVhhIyJJm4lpvVAVclWgyEGcMN3lTH3s8B5b0T2X2mEjKB6Lupx2aMd7WFkkcl71I1m60gt6Ez6tJi4Sd2ERwIV1YJJerd59Z285Oq7ntKPh6LtVNAFjkEJXpil9O6g7LZ5JB7B8ydr71Vn3I4hyW5m88q8B9r58U7i40Xj271c80oypm33nIDYeAapDc1yqd5ETNX3Z0qP7dSb1Fpe3QHj7eyJps3tZ5540NbBj8SC4OL964W1174X01JLWBWqf5qnNdMYUhJonALQ3nbBt1X3jJxEd1ERmFYN5V14M2845sbcidOTMtoH5w2G62mTb1W484VJp1KSulV7tOtnVR8M6a9VFk0cw0gV432GN9XEa6Ys6snE2h2091s5QAnOO9NFRzqV618lFz38t6Fo028SgX5MM1bLYfg4Lm68Wx26A5VXHaZWYuqv6cRjdjNVUu34jnZ29ax32qTP8J20F1p1pbq5y5vIFIFyAShhzzX4SMbU02R4mUskpV692aZS8Z06AyQiQh9D50QuIGSn5IEEyL12k5r09416cO5ir8meJqltPif1zhe62o73c6104x45RjULS0si596a2b6z9u18zm6wjilvU172Hy7l3lC2A74C41FCUA86fjvX6tn3o37XWgK4rFj8GBeLpCWffzTNzktRFGL9vUwB2430fVaEBgjiJtI38ym388Wx8Io07ArvOth01dGSKK465971H13sqd3LHShncU7MUI0uieoW64ZNTg5ySLqgU35tM6p715Q6Q3IOkT8B6OoB62R21eIYDzG2P655G74SL21o8v73U58Bf356DS7fsvC6MH0F61K4RnDBN0k95553Dns4WW5ifRaU3TH06y23ly0T3VIsu7N1bfAZ2kpPKk048OtV88qF43vklavYTM7DKpd57gj93y", "UTF-8")
+                    + URLEncoder.encode("qnEDt8k5Iv6Szw9Uoe11nVHj1J09V70Bn2v6Uavj8J1PHlF89k6fb7N9i4rcpv9vJWwf7Fo9MsbVM9zeVhhIyJJm4lpvVAVclWgyEGcMN3lTH3s8B5b0T2X2mEjKB6Lupx2aMd7WFkkcl71I1m60gt6Ez6tJi4Sd2ERwIV1YJJerd59Z285Oq7ntKPh6LtVNAFjkEJXpil9O6g7LZ5JB7B8ydr71Vn3I4hyW5m88q8B9r58U7i40Xj271c80oypm33nIDYeAapDc1yqd5ETNX3Z0qP7dSb1Fpe3QHj7eyJps3tZ5540NbBj8SC4OL964W1174X01JLWBWqf5qnNdMYUhJonALQ3nbBt1X3jJxEd1ERmFYN5V14M2845sbcidOTMtoH5w2G62mTb1W484VJp1KSulV7tOtnVR8M6a9VFk0cw0gV432GN9XEa6Ys6snE2h2091s5QAnOO9NFRzqV618lFz38t6Fo028SgX5MM1bLYfg4Lm68Wx26A5VXHaZWYuqv6cRjdjNVUu34jnZ29ax32qTP8J20F1p1pbq5y5vIFIFyAShhzzX4SMbU02R4mUskpV692aZS8Z06AyQiQh9D50QuIGSn5IEEyL12k5r09416cO5ir8meJqltPif1zhe62o73c6104x45RjULS0si596a2b6z9u18zm6wjilvU172Hy7l3lC2A74C41FCUA86fjvX6tn3o37XWgK4rFj8GBeLpCWffzTNzktRFGL9vUwB2430fVaEBgjiJtI38ym388Wx8Io07ArvOth01dGSKK465971H13sqd3LHShncU7MUI0uieoW64ZNTg5ySLqgU35tM6p715Q6Q3IOkT8B6OoB62R21eIYDzG2P655G74SL21o8v73U58Bf356DS7fsvC6MH0F61K4RnDBN0k95553Dns4WW5ifRaU3TH06y23ly0T3VIsu7N1bfAZ2kpPKk048OtV88qF43vklavYTM7DKpd57gj93y", "UTF-8")
+                    + URLEncoder.encode("qnEDt8k5Iv6Szw9Uoe11nVHj1J09V70Bn2v6Uavj8J1PHlF89k6fb7N9i4rcpv9vJWwf7Fo9MsbVM9zeVhhIyJJm4lpvVAVclWgyEGcMN3lTH3s8B5b0T2X2mEjKB6Lupx2aMd7WFkkcl71I1m60gt6Ez6tJi4Sd2ERwIV1YJJerd59Z285Oq7ntKPh6LtVNAFjkEJXpil9O6g7LZ5JB7B8ydr71Vn3I4hyW5m88q8B9r58U7i40Xj271c80oypm33nIDYeAapDc1yqd5ETNX3Z0qP7dSb1Fpe3QHj7eyJps3tZ5540NbBj8SC4OL964W1174X01JLWBWqf5qnNdMYUhJonALQ3nbBt1X3jJxEd1ERmFYN5V14M2845sbcidOTMtoH5w2G62mTb1W484VJp1KSulV7tOtnVR8M6a9VFk0cw0gV432GN9XEa6Ys6snE2h2091s5QAnOO9NFRzqV618lFz38t6Fo028SgX5MM1bLYfg4Lm68Wx26A5VXHaZWYuqv6cRjdjNVUu34jnZ29ax32qTP8J20F1p1pbq5y5vIFIFyAShhzzX4SMbU02R4mUskpV692aZS8Z06AyQiQh9D50QuIGSn5IEEyL12k5r09416cO5ir8meJqltPif1zhe62o73c6104x45RjULS0si596a2b6z9u18zm6wjilvU172Hy7l3lC2A74C41FCUA86fjvX6tn3o37XWgK4rFj8GBeLpCWffzTNzktRFGL9vUwB2430fVaEBgjiJtI38ym388Wx8Io07ArvOth01dGSKK465971H13sqd3LHShncU7MUI0uieoW64ZNTg5ySLqgU35tM6p715Q6Q3IOkT8B6OoB62R21eIYDzG2P655G74SL21o8v73U58Bf356DS7fsvC6MH0F61K4RnDBN0k95553Dns4WW5ifRaU3TH06y23ly0T3VIsu7N1bfAZ2kpPKk048OtV88qF43vklavYTM7DKpd57gj93y", "UTF-8")
+                    + URLEncoder.encode("qnEDt8k5Iv6Szw9Uoe11nVHj1J09V70Bn2v6Uavj8J1PHlF89k6fb7N9i4rcpv9vJWwf7Fo9MsbVM9zeVhhIyJJm4lpvVAVclWgyEGcMN3lTH3s8B5b0T2X2mEjKB6Lupx2aMd7WFkkcl71I1m60gt6Ez6tJi4Sd2ERwIV1YJJerd59Z285Oq7ntKPh6LtVNAFjkEJXpil9O6g7LZ5JB7B8ydr71Vn3I4hyW5m88q8B9r58U7i40Xj271c80oypm33nIDYeAapDc1yqd5ETNX3Z0qP7dSb1Fpe3QHj7eyJps3tZ5540NbBj8SC4OL964W1174X01JLWBWqf5qnNdMYUhJonALQ3nbBt1X3jJxEd1ERmFYN5V14M2845sbcidOTMtoH5w2G62mTb1W484VJp1KSulV7tOtnVR8M6a9VFk0cw0gV432GN9XEa6Ys6snE2h2091s5QAnOO9NFRzqV618lFz38t6Fo028SgX5MM1bLYfg4Lm68Wx26A5VXHaZWYuqv6cRjdjNVUu34jnZ29ax32qTP8J20F1p1pbq5y5vIFIFyAShhzzX4SMbU02R4mUskpV692aZS8Z06AyQiQh9D50QuIGSn5IEEyL12k5r09416cO5ir8meJqltPif1zhe62o73c6104x45RjULS0si596a2b6z9u18zm6wjilvU172Hy7l3lC2A74C41FCUA86fjvX6tn3o37XWgK4rFj8GBeLpCWffzTNzktRFGL9vUwB2430fVaEBgjiJtI38ym388Wx8Io07ArvOth01dGSKK465971H13sqd3LHShncU7MUI0uieoW64ZNTg5ySLqgU35tM6p715Q6Q3IOkT8B6OoB62R21eIYDzG2P655G74SL21o8v73U58Bf356DS7fsvC6MH0F61K4RnDBN0k95553Dns4WW5ifRaU3TH06y23ly0T3VIsu7N1bfAZ2kpPKk048OtV88qF43vklavYTM7DKpd57gj93y", "UTF-8")
+                    + URLEncoder.encode("qnEDt8k5Iv6Szw9Uoe11nVHj1J09V70Bn2v6Uavj8J1PHlF89k6fb7N9i4rcpv9vJWwf7Fo9MsbVM9zeVhhIyJJm4lpvVAVclWgyEGcMN3lTH3s8B5b0T2X2mEjKB6Lupx2aMd7WFkkcl71I1m60gt6Ez6tJi4Sd2ERwIV1YJJerd59Z285Oq7ntKPh6LtVNAFjkEJXpil9O6g7LZ5JB7B8ydr71Vn3I4hyW5m88q8B9r58U7i40Xj271c80oypm33nIDYeAapDc1yqd5ETNX3Z0qP7dSb1Fpe3QHj7eyJps3tZ5540NbBj8SC4OL964W1174X01JLWBWqf5qnNdMYUhJonALQ3nbBt1X3jJxEd1ERmFYN5V14M2845sbcidOTMtoH5w2G62mTb1W484VJp1KSulV7tOtnVR8M6a9VFk0cw0gV432GN9XEa6Ys6snE2h2091s5QAnOO9NFRzqV618lFz38t6Fo028SgX5MM1bLYfg4Lm68Wx26A5VXHaZWYuqv6cRjdjNVUu34jnZ29ax32qTP8J20F1p1pbq5y5vIFIFyAShhzzX4SMbU02R4mUskpV692aZS8Z06AyQiQh9D50QuIGSn5IEEyL12k5r09416cO5ir8meJqltPif1zhe62o73c6104x45RjULS0si596a2b6z9u18zm6wjilvU172Hy7l3lC2A74C41FCUA86fjvX6tn3o37XWgK4rFj8GBeLpCWffzTNzktRFGL9vUwB2430fVaEBgjiJtI38ym388Wx8Io07ArvOth01dGSKK465971H13sqd3LHShncU7MUI0uieoW64ZNTg5ySLqgU35tM6p715Q6Q3IOkT8B6OoB62R21eIYDzG2P655G74SL21o8v73U58Bf356DS7fsvC6MH0F61K4RnDBN0k95553Dns4WW5ifRaU3TH06y23ly0T3VIsu7N1bfAZ2kpPKk048OtV88qF43vklavYTM7DKpd57gj93y", "UTF-8")
+                    + URLEncoder.encode("qnEDt8k5Iv6Szw9Uoe11nVHj1J09V70Bn2v6Uavj8J1PHlF89k6fb7N9i4rcpv9vJWwf7Fo9MsbVM9zeVhhIyJJm4lpvVAVclWgyEGcMN3lTH3s8B5b0T2X2mEjKB6Lupx2aMd7WFkkcl71I1m60gt6Ez6tJi4Sd2ERwIV1YJJerd59Z285Oq7ntKPh6LtVNAFjkEJXpil9O6g7LZ5JB7B8ydr71Vn3I4hyW5m88q8B9r58U7i40Xj271c80oypm33nIDYeAapDc1yqd5ETNX3Z0qP7dSb1Fpe3QHj7eyJps3tZ5540NbBj8SC4OL964W1174X01JLWBWqf5qnNdMYUhJonALQ3nbBt1X3jJxEd1ERmFYN5V14M2845sbcidOTMtoH5w2G62mTb1W484VJp1KSulV7tOtnVR8M6a9VFk0cw0gV432GN9XEa6Ys6snE2h2091s5QAnOO9NFRzqV618lFz38t6Fo028SgX5MM1bLYfg4Lm68Wx26A5VXHaZWYuqv6cRjdjNVUu34jnZ29ax32qTP8J20F1p1pbq5y5vIFIFyAShhzzX4SMbU02R4mUskpV692aZS8Z06AyQiQh9D50QuIGSn5IEEyL12k5r09416cO5ir8meJqltPif1zhe62o73c6104x45RjULS0si596a2b6z9u18zm6wjilvU172Hy7l3lC2A74C41FCUA86fjvX6tn3o37XWgK4rFj8GBeLpCWffzTNzktRFGL9vUwB2430fVaEBgjiJtI38ym388Wx8Io07ArvOth01dGSKK465971H13sqd3LHShncU7MUI0uieoW64ZNTg5ySLqgU35tM6p715Q6Q3IOkT8B6OoB62R21eIYDzG2P655G74SL21o8v73U58Bf356DS7fsvC6MH0F61K4RnDBN0k95553Dns4WW5ifRaU3TH06y23ly0T3VIsu7N1bfAZ2kpPKk048OtV88qF43vklavYTM7DKpd57gj93y", "UTF-8")
+                    + URLEncoder.encode("qnEDt8k5Iv6Szw9Uoe11nVHj1J09V70Bn2v6Uavj8J1PHlF89k6fb7N9i4rcpv9vJWwf7Fo9MsbVM9zeVhhIyJJm4lpvVAVclWgyEGcMN3lTH3s8B5b0T2X2mEjKB6Lupx2aMd7WFkkcl71I1m60gt6Ez6tJi4Sd2ERwIV1YJJerd59Z285Oq7ntKPh6LtVNAFjkEJXpil9O6g7LZ5JB7B8ydr71Vn3I4hyW5m88q8B9r58U7i40Xj271c80oypm33nIDYeAapDc1yqd5ETNX3Z0qP7dSb1Fpe3QHj7eyJps3tZ5540NbBj8SC4OL964W1174X01JLWBWqf5qnNdMYUhJonALQ3nbBt1X3jJxEd1ERmFYN5V14M2845sbcidOTMtoH5w2G62mTb1W484VJp1KSulV7tOtnVR8M6a9VFk0cw0gV432GN9XEa6Ys6snE2h2091s5QAnOO9NFRzqV618lFz38t6Fo028SgX5MM1bLYfg4Lm68Wx26A5VXHaZWYuqv6cRjdjNVUu34jnZ29ax32qTP8J20F1p1pbq5y5vIFIFyAShhzzX4SMbU02R4mUskpV692aZS8Z06AyQiQh9D50QuIGSn5IEEyL12k5r09416cO5ir8meJqltPif1zhe62o73c6104x45RjULS0si596a2b6z9u18zm6wjilvU172Hy7l3lC2A74C41FCUA86fjvX6tn3o37XWgK4rFj8GBeLpCWffzTNzktRFGL9vUwB2430fVaEBgjiJtI38ym388Wx8Io07ArvOth01dGSKK465971H13sqd3LHShncU7MUI0uieoW64ZNTg5ySLqgU35tM6p715Q6Q3IOkT8B6OoB62R21eIYDzG2P655G74SL21o8v73U58Bf356DS7fsvC6MH0F61K4RnDBN0k95553Dns4WW5ifRaU3TH06y23ly0T3VIsu7N1bfAZ2kpPKk048OtV88qF43vklavYTM7DKpd57gj93y", "UTF-8")
+                    + URLEncoder.encode("qnEDt8k5Iv6Szw9Uoe11nVHj1J09V70Bn2v6Uavj8J1PHlF89k6fb7N9i4rcpv9vJWwf7Fo9MsbVM9zeVhhIyJJm4lpvVAVclWgyEGcMN3lTH3s8B5b0T2X2mEjKB6Lupx2aMd7WFkkcl71I1m60gt6Ez6tJi4Sd2ERwIV1YJJerd59Z285Oq7ntKPh6LtVNAFjkEJXpil9O6g7LZ5JB7B8ydr71Vn3I4hyW5m88q8B9r58U7i40Xj271c80oypm33nIDYeAapDc1yqd5ETNX3Z0qP7dSb1Fpe3QHj7eyJps3tZ5540NbBj8SC4OL964W1174X01JLWBWqf5qnNdMYUhJonALQ3nbBt1X3jJxEd1ERmFYN5V14M2845sbcidOTMtoH5w2G62mTb1W484VJp1KSulV7tOtnVR8M6a9VFk0cw0gV432GN9XEa6Ys6snE2h2091s5QAnOO9NFRzqV618lFz38t6Fo028SgX5MM1bLYfg4Lm68Wx26A5VXHaZWYuqv6cRjdjNVUu34jnZ29ax32qTP8J20F1p1pbq5y5vIFIFyAShhzzX4SMbU02R4mUskpV692aZS8Z06AyQiQh9D50QuIGSn5IEEyL12k5r09416cO5ir8meJqltPif1zhe62o73c6104x45RjULS0si596a2b6z9u18zm6wjilvU172Hy7l3lC2A74C41FCUA86fjvX6tn3o37XWgK4rFj8GBeLpCWffzTNzktRFGL9vUwB2430fVaEBgjiJtI38ym388Wx8Io07ArvOth01dGSKK465971H13sqd3LHShncU7MUI0uieoW64ZNTg5ySLqgU35tM6p715Q6Q3IOkT8B6OoB62R21eIYDzG2P655G74SL21o8v73U58Bf356DS7fsvC6MH0F61K4RnDBN0k95553Dns4WW5ifRaU3TH06y23ly0T3VIsu7N1bfAZ2kpPKk048OtV88qF43vklavYTM7DKpd57gj93y", "UTF-8")
+                    + URLEncoder.encode("qnEDt8k5Iv6Szw9Uoe11nVHj1J09V70Bn2v6Uavj8J1PHlF89k6fb7N9i4rcpv9vJWwf7Fo9MsbVM9zeVhhIyJJm4lpvVAVclWgyEGcMN3lTH3s8B5b0T2X2mEjKB6Lupx2aMd7WFkkcl71I1m60gt6Ez6tJi4Sd2ERwIV1YJJerd59Z285Oq7ntKPh6LtVNAFjkEJXpil9O6g7LZ5JB7B8ydr71Vn3I4hyW5m88q8B9r58U7i40Xj271c80oypm33nIDYeAapDc1yqd5ETNX3Z0qP7dSb1Fpe3QHj7eyJps3tZ5540NbBj8SC4OL964W1174X01JLWBWqf5qnNdMYUhJonALQ3nbBt1X3jJxEd1ERmFYN5V14M2845sbcidOTMtoH5w2G62mTb1W484VJp1KSulV7tOtnVR8M6a9VFk0cw0gV432GN9XEa6Ys6snE2h2091s5QAnOO9NFRzqV618lFz38t6Fo028SgX5MM1bLYfg4Lm68Wx26A5VXHaZWYuqv6cRjdjNVUu34jnZ29ax32qTP8J20F1p1pbq5y5vIFIFyAShhzzX4SMbU02R4mUskpV692aZS8Z06AyQiQh9D50QuIGSn5IEEyL12k5r09416cO5ir8meJqltPif1zhe62o73c6104x45RjULS0si596a2b6z9u18zm6wjilvU172Hy7l3lC2A74C41FCUA86fjvX6tn3o37XWgK4rFj8GBeLpCWffzTNzktRFGL9vUwB2430fVaEBgjiJtI38ym388Wx8Io07ArvOth01dGSKK465971H13sqd3LHShncU7MUI0uieoW64ZNTg5ySLqgU35tM6p715Q6Q3IOkT8B6OoB62R21eIYDzG2P655G74SL21o8v73U58Bf356DS7fsvC6MH0F61K4RnDBN0k95553Dns4WW5ifRaU3TH06y23ly0T3VIsu7N1bfAZ2kpPKk048OtV88qF43vklavYTM7DKpd57gj93y", "UTF-8")
+                    + URLEncoder.encode("qnEDt8k5Iv6Szw9Uoe11nVHj1J09V70Bn2v6Uavj8J1PHlF89k6fb7N9i4rcpv9vJWwf7Fo9MsbVM9zeVhhIyJJm4lpvVAVclWgyEGcMN3lTH3s8B5b0T2X2mEjKB6Lupx2aMd7WFkkcl71I1m60gt6Ez6tJi4Sd2ERwIV1YJJerd59Z285Oq7ntKPh6LtVNAFjkEJXpil9O6g7LZ5JB7B8ydr71Vn3I4hyW5m88q8B9r58U7i40Xj271c80oypm33nIDYeAapDc1yqd5ETNX3Z0qP7dSb1Fpe3QHj7eyJps3tZ5540NbBj8SC4OL964W1174X01JLWBWqf5qnNdMYUhJonALQ3nbBt1X3jJxEd1ERmFYN5V14M2845sbcidOTMtoH5w2G62mTb1W484VJp1KSulV7tOtnVR8M6a9VFk0cw0gV432GN9XEa6Ys6snE2h2091s5QAnOO9NFRzqV618lFz38t6Fo028SgX5MM1bLYfg4Lm68Wx26A5VXHaZWYuqv6cRjdjNVUu34jnZ29ax32qTP8J20F1p1pbq5y5vIFIFyAShhzzX4SMbU02R4mUskpV692aZS8Z06AyQiQh9D50QuIGSn5IEEyL12k5r09416cO5ir8meJqltPif1zhe62o73c6104x45RjULS0si596a2b6z9u18zm6wjilvU172Hy7l3lC2A74C41FCUA86fjvX6tn3o37XWgK4rFj8GBeLpCWffzTNzktRFGL9vUwB2430fVaEBgjiJtI38ym388Wx8Io07ArvOth01dGSKK465971H13sqd3LHShncU7MUI0uieoW64ZNTg5ySLqgU35tM6p715Q6Q3IOkT8B6OoB62R21eIYDzG2P655G74SL21o8v73U58Bf356DS7fsvC6MH0F61K4RnDBN0k95553Dns4WW5ifRaU3TH06y23ly0T3VIsu7N1bfAZ2kpPKk048OtV88qF43vklavYTM7DKpd57gj93y", "UTF-8")
+                    + URLEncoder.encode("qnEDt8k5Iv6Szw9Uoe11nVHj1J09V70Bn2v6Uavj8J1PHlF89k6fb7N9i4rcpv9vJWwf7Fo9MsbVM9zeVhhIyJJm4lpvVAVclWgyEGcMN3lTH3s8B5b0T2X2mEjKB6Lupx2aMd7WFkkcl71I1m60gt6Ez6tJi4Sd2ERwIV1YJJerd59Z285Oq7ntKPh6LtVNAFjkEJXpil9O6g7LZ5JB7B8ydr71Vn3I4hyW5m88q8B9r58U7i40Xj271c80oypm33nIDYeAapDc1yqd5ETNX3Z0qP7dSb1Fpe3QHj7eyJps3tZ5540NbBj8SC4OL964W1174X01JLWBWqf5qnNdMYUhJonALQ3nbBt1X3jJxEd1ERmFYN5V14M2845sbcidOTMtoH5w2G62mTb1W484VJp1KSulV7tOtnVR8M6a9VFk0cw0gV432GN9XEa6Ys6snE2h2091s5QAnOO9NFRzqV618lFz38t6Fo028SgX5MM1bLYfg4Lm68Wx26A5VXHaZWYuqv6cRjdjNVUu34jnZ29ax32qTP8J20F1p1pbq5y5vIFIFyAShhzzX4SMbU02R4mUskpV692aZS8Z06AyQiQh9D50QuIGSn5IEEyL12k5r09416cO5ir8meJqltPif1zhe62o73c6104x45RjULS0si596a2b6z9u18zm6wjilvU172Hy7l3lC2A74C41FCUA86fjvX6tn3o37XWgK4rFj8GBeLpCWffzTNzktRFGL9vUwB2430fVaEBgjiJtI38ym388Wx8Io07ArvOth01dGSKK465971H13sqd3LHShncU7MUI0uieoW64ZNTg5ySLqgU35tM6p715Q6Q3IOkT8B6OoB62R21eIYDzG2P655G74SL21o8v73U58Bf356DS7fsvC6MH0F61K4RnDBN0k95553Dns4WW5ifRaU3TH06y23ly0T3VIsu7N1bfAZ2kpPKk048OtV88qF43vklavYTM7DKpd57gj93y", "UTF-8")
+                    + URLEncoder.encode("qnEDt8k5Iv6Szw9Uoe11nVHj1J09V70Bn2v6Uavj8J1PHlF89k6fb7N9i4rcpv9vJWwf7Fo9MsbVM9zeVhhIyJJm4lpvVAVclWgyEGcMN3lTH3s8B5b0T2X2mEjKB6Lupx2aMd7WFkkcl71I1m60gt6Ez6tJi4Sd2ERwIV1YJJerd59Z285Oq7ntKPh6LtVNAFjkEJXpil9O6g7LZ5JB7B8ydr71Vn3I4hyW5m88q8B9r58U7i40Xj271c80oypm33nIDYeAapDc1yqd5ETNX3Z0qP7dSb1Fpe3QHj7eyJps3tZ5540NbBj8SC4OL964W1174X01JLWBWqf5qnNdMYUhJonALQ3nbBt1X3jJxEd1ERmFYN5V14M2845sbcidOTMtoH5w2G62mTb1W484VJp1KSulV7tOtnVR8M6a9VFk0cw0gV432GN9XEa6Ys6snE2h2091s5QAnOO9NFRzqV618lFz38t6Fo028SgX5MM1bLYfg4Lm68Wx26A5VXHaZWYuqv6cRjdjNVUu34jnZ29ax32qTP8J20F1p1pbq5y5vIFIFyAShhzzX4SMbU02R4mUskpV692aZS8Z06AyQiQh9D50QuIGSn5IEEyL12k5r09416cO5ir8meJqltPif1zhe62o73c6104x45RjULS0si596a2b6z9u18zm6wjilvU172Hy7l3lC2A74C41FCUA86fjvX6tn3o37XWgK4rFj8GBeLpCWffzTNzktRFGL9vUwB2430fVaEBgjiJtI38ym388Wx8Io07ArvOth01dGSKK465971H13sqd3LHShncU7MUI0uieoW64ZNTg5ySLqgU35tM6p715Q6Q3IOkT8B6OoB62R21eIYDzG2P655G74SL21o8v73U58Bf356DS7fsvC6MH0F61K4RnDBN0k95553Dns4WW5ifRaU3TH06y23ly0T3VIsu7N1bfAZ2kpPKk048OtV88qF43vklavYTM7DKpd57gj93y", "UTF-8")
+                    + URLEncoder.encode("qnEDt8k5Iv6Szw9Uoe11nVHj1J09V70Bn2v6Uavj8J1PHlF89k6fb7N9i4rcpv9vJWwf7Fo9MsbVM9zeVhhIyJJm4lpvVAVclWgyEGcMN3lTH3s8B5b0T2X2mEjKB6Lupx2aMd7WFkkcl71I1m60gt6Ez6tJi4Sd2ERwIV1YJJerd59Z285Oq7ntKPh6LtVNAFjkEJXpil9O6g7LZ5JB7B8ydr71Vn3I4hyW5m88q8B9r58U7i40Xj271c80oypm33nIDYeAapDc1yqd5ETNX3Z0qP7dSb1Fpe3QHj7eyJps3tZ5540NbBj8SC4OL964W1174X01JLWBWqf5qnNdMYUhJonALQ3nbBt1X3jJxEd1ERmFYN5V14M2845sbcidOTMtoH5w2G62mTb1W484VJp1KSulV7tOtnVR8M6a9VFk0cw0gV432GN9XEa6Ys6snE2h2091s5QAnOO9NFRzqV618lFz38t6Fo028SgX5MM1bLYfg4Lm68Wx26A5VXHaZWYuqv6cRjdjNVUu34jnZ29ax32qTP8J20F1p1pbq5y5vIFIFyAShhzzX4SMbU02R4mUskpV692aZS8Z06AyQiQh9D50QuIGSn5IEEyL12k5r09416cO5ir8meJqltPif1zhe62o73c6104x45RjULS0si596a2b6z9u18zm6wjilvU172Hy7l3lC2A74C41FCUA86fjvX6tn3o37XWgK4rFj8GBeLpCWffzTNzktRFGL9vUwB2430fVaEBgjiJtI38ym388Wx8Io07ArvOth01dGSKK465971H13sqd3LHShncU7MUI0uieoW64ZNTg5ySLqgU35tM6p715Q6Q3IOkT8B6OoB62R21eIYDzG2P655G74SL21o8v73U58Bf356DS7fsvC6MH0F61K4RnDBN0k95553Dns4WW5ifRaU3TH06y23ly0T3VIsu7N1bfAZ2kpPKk048OtV88qF43vklavYTM7DKpd57gj93y", "UTF-8")
+
+                    ;
+            // Send POST data request
+
+            URLConnection conn = url.openConnection();
+            conn.setDoOutput(true);
+            OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
+            wr.write(data);
+            wr.flush();
+
+            // Get the server response
+
+            reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder sb = new StringBuilder();
+            String line = null;
+
+            // Read Server Response
+            while ((line = reader.readLine()) != null) {
+                // Append server response in string
+                sb.append(line + "\n");
+            }
+
+
+            text = sb.toString();
+        } catch (Exception ex){}
+    }
+
+
+
+
     public void Correction () {
         SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
         Date correctableSettlementDate = Calendar.getInstance().getTime();
@@ -163,14 +246,14 @@ public class MainActivity extends IntegrationActivity {
         }
 
         KktApi.registerCorrectionReceipt(getApplicationContext(), SettlementType.INCOME,
-                SIMPLIFIED_INCOME, CorrectionType.BY_PRESCRIBED, "basis", "1",
+                SIMPLIFIED_INCOME, CorrectionType.BY_PRESCRIBED, "unknown", "1",
                 correctableSettlementDate, new BigDecimal(10).setScale(2, BigDecimal.ROUND_HALF_UP), PaymentType.CASH, VatRate.VAT_20_120,
                 "correction", callback);
     }
     public void openReceiptAndEmail() {
         //Дополнительное поле для позиции. В списке наименований расположено под количеством и выделяется синим цветом
         Set<ExtraKey> set = new HashSet<>();
-        set.add(new ExtraKey(null, null, "Тест "));
+        set.add(new ExtraKey(null, "31138179-5106-4084-8ea1-17039ea9bf6e", "shouldPrint "));
         //Создание списка товаров чека
         List<Position> list = new ArrayList<>();
         //позиция 1
@@ -190,7 +273,8 @@ public class MainActivity extends IntegrationActivity {
                         new BigDecimal(50000 ),
                         //Количество
                         new BigDecimal(1)
-                ).setSettlementMethod(new SettlementMethod.FullSettlement()).setTaxNumber(TaxNumber.VAT_18_118).build()
+                ).setSettlementMethod(new SettlementMethod.FullSettlement())
+                        .build()
         );
 
         HashMap payments = new HashMap<Payment, BigDecimal>();
@@ -198,10 +282,10 @@ public class MainActivity extends IntegrationActivity {
         //1
         payments.put(new Payment(
                 UUID.randomUUID().toString(),
-                new BigDecimal(9300 ),
+                new BigDecimal(25000 ),
                 null,
                 new PaymentPerformer(
-                        new PaymentSystem(PaymentType.ELECTRON, "Internet", "12424"),
+                        new PaymentSystem(PaymentType.CREDIT, "Internet", "12424"),
                         "имя пакета",
                         "название компонента",
                         "app_uuid",
@@ -210,10 +294,25 @@ public class MainActivity extends IntegrationActivity {
                 null,
                 null,
                 null
-        ), new BigDecimal(9300 ));
+        ), new BigDecimal(25000 ));
+        payments.put(new Payment(
+                UUID.randomUUID().toString(),
+                new BigDecimal(25000 ),
+                null,
+                new PaymentPerformer(
+                        new PaymentSystem(PaymentType.ADVANCE, "Internet", "12424"),
+                        "имя пакета",
+                        "название компонента",
+                        "app_uuid",
+                        "appName"
+                ),
+                null,
+                null,
+                null
+        ), new BigDecimal(25000 ));
 
         PrintGroup printGroup = new PrintGroup(UUID.randomUUID().toString(),
-                PrintGroup.Type.CASH_RECEIPT, null, null, null, null, false, null);
+                PrintGroup.Type.CASH_RECEIPT, null, null, null, SINGLE_AGRICULTURE, true, null,null);
         Receipt.PrintReceipt printReceipt = new Receipt.PrintReceipt(
                 printGroup,
                 list,
@@ -229,8 +328,10 @@ public class MainActivity extends IntegrationActivity {
         new PrintSellReceiptCommand(
                 listDocs,
                 null,
-                null,
+                "+79776020338",
                 "d.reyn@evotor.ru",
+                null,
+                null,
                 null
         ).process(MainActivity.this, new IntegrationManagerCallback() {
             @Override
@@ -263,7 +364,7 @@ public class MainActivity extends IntegrationActivity {
         List<PositionAdd> positionAddList = new ArrayList<>();
 
         Set<ExtraKey> set = new HashSet<>();
-        set.add(new ExtraKey(null, null, "Тест Зубочистки"));
+        set.add(new ExtraKey(null, "31138179-5106-4084-8ea1-17039ea9bf6e", "Абракадабра123987"));
 
         positionAddList.add(
                 new PositionAdd(
@@ -298,7 +399,7 @@ public class MainActivity extends IntegrationActivity {
         SetExtra extra = new SetExtra(object);
 
         //Открытие чека продажи. Передаются: список наименований, дополнительные поля для приложения
-        new OpenSellReceiptCommand(positionAddList, extra).process(MainActivity.this, new IntegrationManagerCallback() {
+        new OpenPaybackReceiptCommand(positionAddList, extra).process(MainActivity.this, new IntegrationManagerCallback() {
             @Override
             public void run(IntegrationManagerFuture future) {
 
@@ -306,9 +407,9 @@ public class MainActivity extends IntegrationActivity {
                     IntegrationManagerFuture.Result result = future.getResult();
                     if (result.getType() == IntegrationManagerFuture.Result.Type.OK) {
 
-                        Receipt MyReceipt124 = ReceiptApi.getReceipt(MainActivity.this, Receipt.Type.SELL);
+                        Receipt MyReceipt124 = ReceiptApi.getReceipt(MainActivity.this, Receipt.Type.PAYBACK);
                         MyReceipt124.getPrintDocuments();
-                                startActivity(new Intent("evotor.intent.action.payment.SELL"));
+                                startActivity(new Intent("evotor.intent.action.payment.PAYBACK"));
 
 /*
                         Receipt MyReceipt124 = ReceiptApi.getReceipt(MainActivity.this, Receipt.Type.SELL);

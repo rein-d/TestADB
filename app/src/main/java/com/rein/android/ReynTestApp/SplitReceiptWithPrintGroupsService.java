@@ -56,9 +56,10 @@ public class SplitReceiptWithPrintGroupsService extends IntegrationService {
                 */
                 TaxationSystem.SIMPLIFIED_INCOME,
                 //Указывает на необходимость печати чека.
-                false,
+                true,
                 //Реквизиты покупателя.
-                firstLegalEntity);
+                firstLegalEntity,
+                null);
 
         //Списки идентификаторов позиций каждого из покупателей.
         List<String> firstPurchaserpositions = new ArrayList<>();
@@ -102,7 +103,7 @@ public class SplitReceiptWithPrintGroupsService extends IntegrationService {
 
         //Создаём и возвращаем в смарт-терминал результат обработки события в виде коллекиции пар "Событие":"Обработчик события".
         Map<String, ActionProcessor> eventProcessingResult = new HashMap<>();
-        eventProcessingResult.put(PrintGroupRequiredEvent.NAME_SELL_RECEIPT, eventProcessor);
+        eventProcessingResult.put(PrintGroupRequiredEvent.NAME_PAYBACK_RECEIPT, eventProcessor);
 
         return eventProcessingResult;
     }
