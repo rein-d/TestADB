@@ -37,6 +37,7 @@ import ru.evotor.framework.core.IntegrationException;
 import ru.evotor.framework.core.IntegrationManagerCallback;
 import ru.evotor.framework.core.IntegrationManagerFuture;
 import ru.evotor.framework.core.action.command.open_receipt_command.OpenPaybackReceiptCommand;
+import ru.evotor.framework.core.action.command.open_receipt_command.OpenSellReceiptCommand;
 import ru.evotor.framework.core.action.command.print_receipt_command.PrintReceiptCommandResult;
 import ru.evotor.framework.core.action.command.print_receipt_command.PrintSellReceiptCommand;
 import ru.evotor.framework.core.action.command.print_z_report_command.PrintZReportCommand;
@@ -52,6 +53,8 @@ import ru.evotor.framework.receipt.ExtraKey;
 import ru.evotor.framework.receipt.Payment;
 import ru.evotor.framework.receipt.Position;
 import ru.evotor.framework.receipt.PrintGroup;
+import ru.evotor.framework.receipt.Purchaser;
+import ru.evotor.framework.receipt.PurchaserType;
 import ru.evotor.framework.receipt.Receipt;
 import ru.evotor.framework.receipt.ReceiptApi;
 import ru.evotor.framework.receipt.SettlementType;
@@ -311,8 +314,16 @@ public class MainActivity extends IntegrationActivity {
                 null
         ), new BigDecimal(25000 ));
 
+        Purchaser firstLegalEntity = new Purchaser(
+                //Наименование покупателя, например, название организации. Данные сохраняются в теге 1227 фискального документа.
+                "Legal Entity #1",
+                //Номер документа покупателя, например, ИНН или номер паспорта иностранного гражданина. Данные сохраняются в теге 1228 фискального документа.
+                "606053449439",
+                //Тип покупателя, например, юр. лицо. Не сохраняется в фискальном документе.
+                PurchaserType.LEGAL_ENTITY);
+
         PrintGroup printGroup = new PrintGroup(UUID.randomUUID().toString(),
-                PrintGroup.Type.CASH_RECEIPT, null, null, null, SINGLE_AGRICULTURE, true, null,null);
+                PrintGroup.Type.CASH_RECEIPT, null, null, null, SINGLE_AGRICULTURE, true, firstLegalEntity,null);
         Receipt.PrintReceipt printReceipt = new Receipt.PrintReceipt(
                 printGroup,
                 list,
@@ -389,6 +400,7 @@ public class MainActivity extends IntegrationActivity {
                 )
         );
 
+
         //Дополнительные поля в чеке для использования в приложении
         JSONObject object = new JSONObject();
         try {
@@ -399,7 +411,7 @@ public class MainActivity extends IntegrationActivity {
         SetExtra extra = new SetExtra(object);
 
         //Открытие чека продажи. Передаются: список наименований, дополнительные поля для приложения
-        new OpenPaybackReceiptCommand(positionAddList, extra).process(MainActivity.this, new IntegrationManagerCallback() {
+        new OpenSellReceiptCommand(positionAddList, extra).process(MainActivity.this, new IntegrationManagerCallback() {
             @Override
             public void run(IntegrationManagerFuture future) {
 
@@ -407,9 +419,9 @@ public class MainActivity extends IntegrationActivity {
                     IntegrationManagerFuture.Result result = future.getResult();
                     if (result.getType() == IntegrationManagerFuture.Result.Type.OK) {
 
-                        Receipt MyReceipt124 = ReceiptApi.getReceipt(MainActivity.this, Receipt.Type.PAYBACK);
+                        Receipt MyReceipt124 = ReceiptApi.getReceipt(MainActivity.this, Receipt.Type.SELL);
                         MyReceipt124.getPrintDocuments();
-                                startActivity(new Intent("evotor.intent.action.payment.PAYBACK"));
+                                startActivity(new Intent("evotor.intent.action.payment.SELL"));
 
 /*
                         Receipt MyReceipt124 = ReceiptApi.getReceipt(MainActivity.this, Receipt.Type.SELL);
