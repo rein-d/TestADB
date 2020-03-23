@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -40,7 +41,7 @@ public class ChangePositions extends IntegrationService {
                            Position position123 = ((PositionEdit) change).getPosition();
                            changes.clear();
                            changes.add(new PositionEdit(
-                                   Position.Builder.copyFrom(position123).setExtraKeys(someExtraKey).build()));
+                                   Position.Builder.copyFrom(position123).setExtraKeys(someExtraKey).setPriceWithDiscountPosition(new BigDecimal( 200)).build()));
 
                         }
                     }

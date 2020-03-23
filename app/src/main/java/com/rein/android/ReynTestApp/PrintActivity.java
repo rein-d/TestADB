@@ -56,7 +56,7 @@ public class PrintActivity extends BroadcastReceiver {
                 DeviceServiceConnector.getPrinterService().printDocument(
                         Constants.DEFAULT_DEVICE_INDEX,
                         new PrinterDocument(
-                                new PrintableText("nsdvsrdvSREfSRfSEfSEfSdbaergnnn")));
+                                new PrintableText("Тестовый Текст Для СЕРЕГИ!!!!! 19.03.2020")));
             } catch (DeviceServiceException exc) {
                 exc.printStackTrace();
             }

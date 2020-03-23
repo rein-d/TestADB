@@ -38,7 +38,9 @@ public class MyDiscountService extends IntegrationService {
                     JSONObject object = new JSONObject();
                     object.put("someSuperKey", "AWESOME DISCOUNT");
                     SetExtra extra = new SetExtra(object);
+                    startActivity(new Intent(MyDiscountService.this, ActivityWebView.class));
                     List<IPositionChange> listOfChanges = new ArrayList<>();
+
                         callback.onResult(
                                 new ReceiptDiscountEventResult(
                                         discount,
