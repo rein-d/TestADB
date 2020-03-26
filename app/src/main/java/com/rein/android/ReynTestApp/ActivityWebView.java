@@ -27,7 +27,7 @@ public class ActivityWebView extends AppCompatActivity {
             settings.setJavaScriptEnabled(true);
             settings.setDomStorageEnabled(true);
             myWebView.setWebViewClient(new SSLTolerentWebViewClient());
-            myWebView.loadUrl("http://developer.alexanderklimov.ru/android/");
+            myWebView.loadUrl("http://cloudsurvey5.survstat.ru/Survey/Adaptive?p=lgstr3998d44f&mode=1");
 
         }
 

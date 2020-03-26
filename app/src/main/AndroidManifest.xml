@@ -10,6 +10,7 @@
     <uses-permission android:name="ru.evotor.permission.PAYMENT_SYSTEM" />
     <uses-permission android:name="ru.evotor.permission.PRINT_Z_REPORT" />
     <uses-permission android:name="ru.evotor.pushnotifications.PUSH_RECEIVE" />
+    <uses-permission android:name="ru.evotor.permission.BINARY_NETWORK" />
 
 
     <application

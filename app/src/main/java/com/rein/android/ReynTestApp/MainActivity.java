@@ -1,10 +1,13 @@
 package com.rein.android.ReynTestApp;
 
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import org.jetbrains.annotations.NotNull;
@@ -31,6 +34,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import ru.evotor.framework.component.PaymentPerformer;
+import ru.evotor.framework.component.PaymentPerformerApi;
 import ru.evotor.framework.core.Error;
 import ru.evotor.framework.core.IntegrationActivity;
 import ru.evotor.framework.core.IntegrationException;
@@ -59,10 +63,14 @@ import ru.evotor.framework.receipt.Receipt;
 import ru.evotor.framework.receipt.ReceiptApi;
 import ru.evotor.framework.receipt.SettlementType;
 import ru.evotor.framework.receipt.correction.CorrectionType;
+import ru.evotor.framework.receipt.formation.api.ReceiptFormationCallback;
+import ru.evotor.framework.receipt.formation.api.ReceiptFormationException;
+import ru.evotor.framework.receipt.formation.api.SellApi;
 import ru.evotor.framework.receipt.position.AgentRequisites;
 import ru.evotor.framework.receipt.position.SettlementMethod;
 import ru.evotor.framework.receipt.position.VatRate;
 
+import static ru.evotor.framework.kkt.api.KktApi.receiveKktSerialNumber;
 import static ru.evotor.framework.receipt.TaxationSystem.SIMPLIFIED_INCOME;
 import static ru.evotor.framework.receipt.TaxationSystem.SINGLE_AGRICULTURE;
 
@@ -94,7 +102,8 @@ public class MainActivity extends IntegrationActivity {
         findViewById(R.id.button4).setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
-
+                String KktNumber = receiveKktSerialNumber(getApplicationContext());
+                Toast.makeText(MainActivity.this, KktNumber, Toast.LENGTH_LONG).show();
                 openReceipt();
 
             }
@@ -114,11 +123,9 @@ public class MainActivity extends IntegrationActivity {
 
                     @Override
                     public void run() {
-                        try {
-                            SendHttpRequest();
-                        } catch (UnsupportedEncodingException e) {
-                            e.printStackTrace();
-                        }
+                        //SendHttpRequest();
+                        String KktNumber = receiveKktSerialNumber(getApplicationContext());
+                        Toast.makeText(MainActivity.this, KktNumber, Toast.LENGTH_LONG).show();
                     }
                     }).start();
 
@@ -403,6 +410,7 @@ public class MainActivity extends IntegrationActivity {
                         MyReceipt124.getPrintDocuments();
                                 startActivity(new Intent("evotor.intent.action.payment.PAYBACK"));
 
+
 /*
                         Receipt MyReceipt124 = ReceiptApi.getReceipt(MainActivity.this, Receipt.Type.SELL);
                         String uuid = MyReceipt124.getHeader().getUuid();
@@ -433,8 +441,8 @@ public class MainActivity extends IntegrationActivity {
                             }
                         });
                         builderSingle.show();
+*/
 
- */
                     }
                 } catch (IntegrationException e) {
                     e.printStackTrace();
