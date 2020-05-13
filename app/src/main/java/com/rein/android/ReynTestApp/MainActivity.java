@@ -123,9 +123,13 @@ public class MainActivity extends IntegrationActivity {
 
                     @Override
                     public void run() {
-                        //SendHttpRequest();
-                        String KktNumber = receiveKktSerialNumber(getApplicationContext());
-                        Toast.makeText(MainActivity.this, KktNumber, Toast.LENGTH_LONG).show();
+                        try {
+                            SendHttpRequest();
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                        //String KktNumber = receiveKktSerialNumber(getApplicationContext());
+                        //Toast.makeText(MainActivity.this, KktNumber, Toast.LENGTH_LONG).show();
                     }
                     }).start();
 
@@ -270,8 +274,8 @@ public class MainActivity extends IntegrationActivity {
                         //Количество
                         new BigDecimal(1)
                 )
-                        .setAgentRequisites( AgentRequisites.createForAgent("070704218872", phones))
-                        .setExtraKeys(set)
+                        //.setSettlementMethod(new SettlementMethod.LoanPayment())
+                        .setExtraKeys(set) //Установка Extra-информации. Данные будут напечатаны на чеке
                         //Установка цены с учетом скидки:
                         //.setPriceWithDiscountPosition(new BigDecimal(500))
                         .build()
@@ -286,7 +290,7 @@ public class MainActivity extends IntegrationActivity {
                 new BigDecimal(1000 ),
                 null,
                 new PaymentPerformer(
-                        new PaymentSystem(PaymentType.CASH, "Internet", "12424"),
+                        new PaymentSystem(PaymentType.ELECTRON, "Internet", "12424"),
                         "имя пакета",
                         "название компонента",
                         "app_uuid",
@@ -296,6 +300,7 @@ public class MainActivity extends IntegrationActivity {
                 null,
                 null
         ), new BigDecimal(1000 ));
+
 
 
 
@@ -326,8 +331,8 @@ public class MainActivity extends IntegrationActivity {
         new PrintSellReceiptCommand(
                 listDocs,
                 null,
-                "+79776020338",
-                "room083@gmail.com",
+                "+79776020339",
+                "room085@gmail.com",
                 null,
                 null,
                 null
@@ -398,7 +403,7 @@ public class MainActivity extends IntegrationActivity {
         SetExtra extra = new SetExtra(object);
 
         //Открытие чека продажи. Передаются: список наименований, дополнительные поля для приложения
-        new OpenPaybackReceiptCommand(positionAddList, extra).process(MainActivity.this, new IntegrationManagerCallback() {
+        new OpenSellReceiptCommand(positionAddList, extra).process(MainActivity.this, new IntegrationManagerCallback() {
             @Override
             public void run(IntegrationManagerFuture future) {
 
@@ -406,9 +411,9 @@ public class MainActivity extends IntegrationActivity {
                     IntegrationManagerFuture.Result result = future.getResult();
                     if (result.getType() == IntegrationManagerFuture.Result.Type.OK) {
 
-                        Receipt MyReceipt124 = ReceiptApi.getReceipt(MainActivity.this, Receipt.Type.PAYBACK);
+                        Receipt MyReceipt124 = ReceiptApi.getReceipt(MainActivity.this, Receipt.Type.SELL);
                         MyReceipt124.getPrintDocuments();
-                                startActivity(new Intent("evotor.intent.action.payment.PAYBACK"));
+                                startActivity(new Intent("evotor.intent.action.payment.SELL"));
 
 
 /*

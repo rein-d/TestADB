@@ -43,7 +43,7 @@ public class SplitReceiptWithPrintGroupsService extends IntegrationService {
                 //Идентифискатор печатной группы (чека покупателя).
                 "241e9344-ef50-46bc-9ce2-443c38b649e5",
                 //Тип чека, например, кассовый чек.
-                PrintGroup.Type.INVOICE,
+                PrintGroup.Type.CASH_RECEIPT,
                 //Наименование покупателя.
                 "OOO Vector",
                 //ИНН покупателя.
@@ -56,7 +56,7 @@ public class SplitReceiptWithPrintGroupsService extends IntegrationService {
                 */
                 null,
                 //Указывает на необходимость печати чека.
-                true,
+                false,
                 //Реквизиты покупателя.
                 firstLegalEntity,
                 null);
@@ -103,7 +103,7 @@ public class SplitReceiptWithPrintGroupsService extends IntegrationService {
 
         //Создаём и возвращаем в смарт-терминал результат обработки события в виде коллекиции пар "Событие":"Обработчик события".
         Map<String, ActionProcessor> eventProcessingResult = new HashMap<>();
-        eventProcessingResult.put(PrintGroupRequiredEvent.NAME_PAYBACK_RECEIPT, eventProcessor);
+        eventProcessingResult.put(PrintGroupRequiredEvent.NAME_SELL_RECEIPT, eventProcessor);
 
         return eventProcessingResult;
     }

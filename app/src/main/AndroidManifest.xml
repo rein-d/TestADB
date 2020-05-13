@@ -10,7 +10,7 @@
     <uses-permission android:name="ru.evotor.permission.PAYMENT_SYSTEM" />
     <uses-permission android:name="ru.evotor.permission.PRINT_Z_REPORT" />
     <uses-permission android:name="ru.evotor.pushnotifications.PUSH_RECEIVE" />
-    <uses-permission android:name="ru.evotor.permission.BINARY_NETWORK" />
+    <uses-permission android:name="ru.evotor.permission.SELL_INTEGRATION_SERVICE" />
 
 
     <application
@@ -23,7 +23,7 @@
         tools:ignore="GoogleAppIndexingWarning">
         <receiver
             android:name="com.rein.android.ReynTestApp.PrintActivity"
-            android:enabled="true"
+            android:enabled="false"
             android:exported="true">
             <intent-filter>
                 <action android:name="evotor.intent.action.receipt.sell.RECEIPT_CLOSED" />
@@ -91,6 +91,14 @@
         <service
             android:name="com.rein.android.ReynTestApp.PrintExtraService"
             android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="evo.v2.receipt.sell.printExtra.REQUIRED" />
+            </intent-filter>
+        </service>
+        <service
+            android:name="com.rein.android.ReynTestApp.Test"
+            android:enabled="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="evo.v2.receipt.sell.printExtra.REQUIRED" />
