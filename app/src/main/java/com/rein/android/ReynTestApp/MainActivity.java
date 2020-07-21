@@ -420,7 +420,8 @@ public class MainActivity extends IntegrationActivity {
 
                         Receipt MyReceipt124 = ReceiptApi.getReceipt(MainActivity.this, Receipt.Type.SELL);
                         MyReceipt124.getPrintDocuments();
-                                startActivity(new Intent("evotor.intent.action.payment.SELL"));
+
+                             //   startActivity(new Intent("evotor.intent.action.payment.SELL"));
 
 
 

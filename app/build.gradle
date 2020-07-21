@@ -8,7 +8,7 @@ android {
         applicationId "com.rein.android.ReynTestApp"
         minSdkVersion 23
         targetSdkVersion 28
-        versionCode 29
+        versionCode 31
         versionName "2.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
