@@ -11,12 +11,15 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import ru.evotor.devices.commons.printer.printable.IPrintable;
+import ru.evotor.devices.commons.printer.printable.PrintableBarcode;
+import ru.evotor.devices.commons.printer.printable.PrintableImage;
 import ru.evotor.devices.commons.printer.printable.PrintableText;
 import ru.evotor.framework.core.IntegrationService;
 import ru.evotor.framework.core.action.event.receipt.changes.receipt.print_extra.SetPrintExtra;
@@ -24,7 +27,10 @@ import ru.evotor.framework.core.action.event.receipt.print_extra.PrintExtraRequi
 import ru.evotor.framework.core.action.event.receipt.print_extra.PrintExtraRequiredEventProcessor;
 import ru.evotor.framework.core.action.event.receipt.print_extra.PrintExtraRequiredEventResult;
 import ru.evotor.framework.core.action.processor.ActionProcessor;
+import ru.evotor.framework.receipt.Receipt;
+import ru.evotor.framework.receipt.ReceiptApi;
 import ru.evotor.framework.receipt.print_extras.PrintExtraPlacePrintGroupHeader;
+import ru.evotor.framework.receipt.print_extras.PrintExtraPlacePrintGroupSummary;
 import ru.evotor.framework.receipt.print_extras.PrintExtraPlacePrintGroupTop;
 
 
@@ -53,21 +59,29 @@ public class PrintExtraService extends IntegrationService {
                     @Override
                     public void call(String s, PrintExtraRequiredEvent printExtraRequiredEvent, Callback callback) {
                         List<SetPrintExtra> setPrintExtras = new ArrayList<SetPrintExtra>();
-                        setPrintExtras.add(new SetPrintExtra(
-                                new PrintExtraPlacePrintGroupTop(null),
-                                new IPrintable[]{
-                                        new PrintableText("SomeText"),
-                                       // new PrintableImage(getBitmapFromAsset("ic_launcher.png"))
-                                }
-                        ));
-                        setPrintExtras.add(new SetPrintExtra(
-                                new PrintExtraPlacePrintGroupHeader(null),
-                                new IPrintable[]{
-                                        new PrintableText("SomeText"),
-                                       // new PrintableBarcode("1234567", PrintableBarcode.BarcodeType.CODE39)
-                                }
-                        ));
-
+                        Receipt r = ReceiptApi.getReceipt(PrintExtraService.this, Receipt.Type.SELL);
+                        if (r != null) {
+                            BigDecimal discount = r.getDiscount();
+                            if (BigDecimal.ZERO.equals(discount)) {
+                                setPrintExtras.add(new SetPrintExtra(
+                                        new PrintExtraPlacePrintGroupTop(null),
+                                        new IPrintable[]{
+                                                new PrintableText("SomeText"),
+                                                new PrintableImage(getBitmapFromAsset("ic_launcher.png"))
+                                        }
+                                ));
+                            }
+                        }
+                        Receipt r1 = ReceiptApi.getReceipt(PrintExtraService.this, Receipt.Type.SELL);
+                        if (r1 != null) {
+                            setPrintExtras.add(new SetPrintExtra(
+                                    new PrintExtraPlacePrintGroupSummary(null),
+                                    new IPrintable[]{
+                                            new PrintableText("Текст после слово ИТОГО"),
+                                            new PrintableBarcode("1234567", PrintableBarcode.BarcodeType.CODE39)
+                                    }
+                            ));
+                        }
                         try {
                             callback.onResult(new PrintExtraRequiredEventResult(setPrintExtras).toBundle());
                         } catch (RemoteException e) {

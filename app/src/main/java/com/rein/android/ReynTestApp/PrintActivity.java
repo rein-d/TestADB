@@ -3,18 +3,25 @@ package com.rein.android.ReynTestApp;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 import ru.evotor.devices.commons.ConnectionWrapper;
 import ru.evotor.devices.commons.Constants;
 import ru.evotor.devices.commons.DeviceServiceConnector;
 import ru.evotor.devices.commons.exception.DeviceServiceException;
 import ru.evotor.devices.commons.printer.PrinterDocument;
+import ru.evotor.devices.commons.printer.printable.PrintableImage;
 import ru.evotor.devices.commons.printer.printable.PrintableText;
 import ru.evotor.devices.commons.services.IPrinterServiceWrapper;
 import ru.evotor.devices.commons.services.IScalesServiceWrapper;
 
-public class PrintActivity extends BroadcastReceiver {
+public class PrintActivity  extends BroadcastReceiver {
 
     @Override
     public void onReceive(final Context context, Intent intent) {
@@ -47,6 +54,7 @@ public class PrintActivity extends BroadcastReceiver {
         });
     }
 
+
     class MyTask extends AsyncTask<Void, Void, Void> {
 
         @Override
@@ -56,7 +64,8 @@ public class PrintActivity extends BroadcastReceiver {
                 DeviceServiceConnector.getPrinterService().printDocument(
                         Constants.DEFAULT_DEVICE_INDEX,
                         new PrinterDocument(
-                                new PrintableText("Тестовый Текст Для СЕРЕГИ!!!!! 19.03.2020")));
+                                new PrintableText("Тестовый Текст фшуаошщфуоашщфоуаофцоуащзощэуосщзЫОсщЩЫосщЫОсщзЫОсщ")));
+
             } catch (DeviceServiceException exc) {
                 exc.printStackTrace();
             }

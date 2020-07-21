@@ -4,6 +4,7 @@ package com.rein.android.ReynTestApp;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import ru.evotor.devices.commons.printer.printable.PrintableImage;
 import ru.evotor.framework.component.PaymentPerformer;
 import ru.evotor.framework.component.PaymentPerformerApi;
 import ru.evotor.framework.core.Error;
@@ -48,6 +50,7 @@ import ru.evotor.framework.core.action.command.print_z_report_command.PrintZRepo
 import ru.evotor.framework.core.action.command.print_z_report_command.PrintZReportCommandResult;
 import ru.evotor.framework.core.action.event.receipt.changes.position.PositionAdd;
 import ru.evotor.framework.core.action.event.receipt.changes.position.SetExtra;
+import ru.evotor.framework.features.FeaturesApi;
 import ru.evotor.framework.kkt.api.DocumentRegistrationCallback;
 import ru.evotor.framework.kkt.api.DocumentRegistrationException;
 import ru.evotor.framework.kkt.api.KktApi;
@@ -62,6 +65,7 @@ import ru.evotor.framework.receipt.PurchaserType;
 import ru.evotor.framework.receipt.Receipt;
 import ru.evotor.framework.receipt.ReceiptApi;
 import ru.evotor.framework.receipt.SettlementType;
+import ru.evotor.framework.receipt.TaxNumber;
 import ru.evotor.framework.receipt.correction.CorrectionType;
 import ru.evotor.framework.receipt.formation.api.ReceiptFormationCallback;
 import ru.evotor.framework.receipt.formation.api.ReceiptFormationException;
@@ -71,6 +75,7 @@ import ru.evotor.framework.receipt.position.SettlementMethod;
 import ru.evotor.framework.receipt.position.VatRate;
 
 import static ru.evotor.framework.kkt.api.KktApi.receiveKktSerialNumber;
+import static ru.evotor.framework.receipt.TaxationSystem.COMMON;
 import static ru.evotor.framework.receipt.TaxationSystem.SIMPLIFIED_INCOME;
 import static ru.evotor.framework.receipt.TaxationSystem.SINGLE_AGRICULTURE;
 
@@ -111,7 +116,8 @@ public class MainActivity extends IntegrationActivity {
         findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, ActivityWebView.class));
+                //startActivity(new Intent(MainActivity.this, ActivityWebView.class));
+
             }
         });
 
@@ -243,7 +249,7 @@ public class MainActivity extends IntegrationActivity {
         }
 
         KktApi.registerCorrectionReceipt(getApplicationContext(), SettlementType.INCOME,
-                SIMPLIFIED_INCOME, CorrectionType.BY_PRESCRIBED, "unknown", "1",
+                COMMON, CorrectionType.BY_PRESCRIBED, "unknown", "1",
                 correctableSettlementDate, new BigDecimal(10).setScale(2, BigDecimal.ROUND_HALF_UP), PaymentType.CASH, VatRate.VAT_20_120,
                 "correction", callback);
     }
@@ -253,8 +259,7 @@ public class MainActivity extends IntegrationActivity {
         set.add(new ExtraKey(null, "31138179-5106-4084-8ea1-17039ea9bf6e", "123"));
         //Создание списка товаров чека
         List<Position> list = new ArrayList<>();
-
-        List<String> phones = new ArrayList<>();
+               List<String> phones = new ArrayList<>();
         phones.add("89631654555");
         //позиция 1
         list.add(
@@ -264,7 +269,7 @@ public class MainActivity extends IntegrationActivity {
                         //UUID товара
                         UUID.randomUUID().toString(),
                         //Наименование
-                        "Товар 1",
+                        "123Товар321",
                         //Наименование единицы измерения
                         "шт",
                         //Точность единицы измерения
@@ -274,7 +279,8 @@ public class MainActivity extends IntegrationActivity {
                         //Количество
                         new BigDecimal(1)
                 )
-                        //.setSettlementMethod(new SettlementMethod.LoanPayment())
+                        //.setSettlementMethod(new SettlementMethod.Lend())
+                        .setTaxNumber(TaxNumber.VAT_18_118)
                         .setExtraKeys(set) //Установка Extra-информации. Данные будут напечатаны на чеке
                         //Установка цены с учетом скидки:
                         //.setPriceWithDiscountPosition(new BigDecimal(500))
@@ -290,7 +296,7 @@ public class MainActivity extends IntegrationActivity {
                 new BigDecimal(1000 ),
                 null,
                 new PaymentPerformer(
-                        new PaymentSystem(PaymentType.ELECTRON, "Internet", "12424"),
+                        new PaymentSystem(PaymentType.CASH, "Internet", "12424"),
                         "имя пакета",
                         "название компонента",
                         "app_uuid",
@@ -314,7 +320,7 @@ public class MainActivity extends IntegrationActivity {
                 PurchaserType.LEGAL_ENTITY);
 
         PrintGroup printGroup = new PrintGroup(UUID.randomUUID().toString(),
-                PrintGroup.Type.CASH_RECEIPT, null, null, null,
+                PrintGroup.Type.INVOICE, null, null, null,
                 null, true, null,null);
         Receipt.PrintReceipt printReceipt = new Receipt.PrintReceipt(
                 printGroup,
@@ -416,8 +422,8 @@ public class MainActivity extends IntegrationActivity {
                                 startActivity(new Intent("evotor.intent.action.payment.SELL"));
 
 
-/*
-                        Receipt MyReceipt124 = ReceiptApi.getReceipt(MainActivity.this, Receipt.Type.SELL);
+
+
                         String uuid = MyReceipt124.getHeader().getUuid();
 
                         final List<PaymentPerformer> paymentPerformers123 = PaymentPerformerApi.INSTANCE.getAllPaymentPerformers(getPackageManager());
@@ -446,7 +452,7 @@ public class MainActivity extends IntegrationActivity {
                             }
                         });
                         builderSingle.show();
-*/
+
 
                     }
                 } catch (IntegrationException e) {
