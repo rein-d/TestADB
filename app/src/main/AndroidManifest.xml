@@ -11,27 +11,43 @@
     <uses-permission android:name="ru.evotor.permission.PRINT_Z_REPORT" />
     <uses-permission android:name="ru.evotor.pushnotifications.PUSH_RECEIVE" />
     <uses-permission android:name="ru.evotor.permission.SELL_INTEGRATION_SERVICE" />
-
+    <uses-permission android:name="ru.evotor.permission.PAYMENT_SYSTEM" />
 
     <application
-
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         tools:ignore="GoogleAppIndexingWarning">
+        <service
+            android:name=".MyPaymentService"
+            android:exported="true"
+            android:icon="@android:drawable/ic_dialog_map"
+            android:label="Текст на кнопке">
+            <meta-data
+                android:name="ru.evotor.sales_screen.BACKGROUND_COLOR"
+                android:value="@android:color/holo_green_light" />
+            <meta-data
+                android:name="ru.evotor.paymentSystem.PAYMENT_SYSTEM_ID"
+                android:value="com.rein.android.ReynTestApp" />
+
+            <intent-filter>
+                <action android:name="evo.v2.receipt.paymentSystem" />
+            </intent-filter>
+        </service>
+
         <receiver
-            android:name="com.rein.android.ReynTestApp.PrintActivity"
+            android:name=".PrintActivity"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="evotor.intent.action.receipt.sell.RECEIPT_CLOSED" />
             </intent-filter>
-
         </receiver>
+
         <service
-            android:name="com.rein.android.ReynTestApp.MyDiscountService"
+            android:name=".MyDiscountService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -40,7 +56,7 @@
         </service>
 
         <activity
-            android:name="com.rein.android.ReynTestApp.MainActivity"
+            android:name=".MainActivity"
             android:icon="@mipmap/ic_launcher">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -54,7 +70,7 @@
                 android:value="#F05023" />
         </activity>
         <activity
-            android:name="com.rein.android.ReynTestApp.ActivityWebView"
+            android:name=".ActivityWebView"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
 
         <meta-data
@@ -62,16 +78,18 @@
             android:value="31138179-5106-4084-8ea1-17039ea9bf6e" />
 
         <service
-            android:name="com.rein.android.ReynTestApp.SplitPaymentService"
+            android:name=".SplitPaymentService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
+
                 <!-- выбрана оплата чека продажи -->
                 <action android:name="evo.v2.receipt.sell.payment.SELECTED" />
                 <!-- выбрана оплата чека возврата -->
                 <action android:name="evo.v2.receipt.payback.payment.SELECTED" />
             </intent-filter>
         </service>
+
         <receiver
             android:name=".PushReceiver"
             android:permission="ru.evotor.pushnotifications.PUSH_SENDER">
@@ -79,17 +97,19 @@
                 <action android:name="ru.evotor.pushnotifications.PUSH_RECEIVED_EVENT" />
             </intent-filter>
         </receiver>
+
         <service
-            android:name="com.rein.android.ReynTestApp.ChangePositions"
+            android:name=".ChangePositions"
             android:enabled="false"
             android:exported="true">
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <action android:name="evo.v2.receipt.sell.beforePositionsEdited" />
             </intent-filter>
         </service>
         <service
-            android:name="com.rein.android.ReynTestApp.PrintExtraService"
+            android:name=".PrintExtraService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -97,10 +117,11 @@
             </intent-filter>
         </service>
         <service
-            android:name="com.rein.android.ReynTestApp.SplitReceiptWithPrintGroupsService"
+            android:name=".SplitReceiptWithPrintGroupsService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
+
                 <!-- будет напечатан чек продажи -->
                 <action android:name="evo.v2.receipt.sell.printGroup.REQUIRED" />
                 <!-- будет напечатан чек возврата -->
@@ -109,6 +130,8 @@
                 <action android:name="evo.v2.receipt.buy.printGroup.REQUIRED" />
             </intent-filter>
         </service>
+        <activity android:name=".MyPaymentActivity" />
+
     </application>
 
 </manifest>

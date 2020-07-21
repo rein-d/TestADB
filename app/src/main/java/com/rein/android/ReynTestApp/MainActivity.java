@@ -394,6 +394,7 @@ public class MainActivity extends IntegrationActivity {
                                 BigDecimal.valueOf( 1.205)
                                 //Добавление цены с учетом скидки на позицию. Итог = price - priceWithDiscountPosition
                         ).setExtraKeys(set)
+                                .setSettlementMethod(new SettlementMethod.Lend())
                                 .build()
                 )
         );
