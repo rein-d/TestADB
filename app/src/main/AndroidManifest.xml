@@ -13,6 +13,7 @@
     <uses-permission android:name="ru.evotor.permission.SELL_INTEGRATION_SERVICE" />
     <uses-permission android:name="ru.evotor.permission.PAYMENT_SYSTEM" />
 
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -20,17 +21,26 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         tools:ignore="GoogleAppIndexingWarning">
+        <receiver
+            android:name=".MyCloseReceiptEvent"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="evotor.intent.action.receipt.sell.RECEIPT_CLOSED" />
+            </intent-filter>
+        </receiver>
         <service
             android:name=".MyPaymentService"
+            android:enabled="true"
             android:exported="true"
             android:icon="@android:drawable/ic_dialog_map"
-            android:label="Текст на кнопке">
+            android:label="Другая платежная система">
             <meta-data
                 android:name="ru.evotor.sales_screen.BACKGROUND_COLOR"
                 android:value="@android:color/holo_green_light" />
             <meta-data
                 android:name="ru.evotor.paymentSystem.PAYMENT_SYSTEM_ID"
-                android:value="com.rein.android.ReynTestApp" />
+                android:value="31138179-5106-4084-8ea1-17039ea9bf6e" />
 
             <intent-filter>
                 <action android:name="evo.v2.receipt.paymentSystem" />
@@ -39,22 +49,20 @@
 
         <receiver
             android:name=".PrintActivity"
-            android:enabled="true"
+            android:enabled="false"
             android:exported="true">
             <intent-filter>
                 <action android:name="evotor.intent.action.receipt.sell.RECEIPT_CLOSED" />
             </intent-filter>
         </receiver>
-
         <service
-            android:name=".MyDiscountService"
+            android:name="MyDiscountService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="evo.v2.receipt.sell.receiptDiscount" />
             </intent-filter>
         </service>
-
         <activity
             android:name=".MainActivity"
             android:icon="@mipmap/ic_launcher">
@@ -98,9 +106,10 @@
             </intent-filter>
         </receiver>
 
+
         <service
             android:name=".ChangePositions"
-            android:enabled="false"
+            android:enabled="true"
             android:exported="true">
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT" />
@@ -109,16 +118,24 @@
             </intent-filter>
         </service>
         <service
-            android:name=".PrintExtraService"
-            android:enabled="true"
+            android:name=".MyPrintService"
+            android:enabled="false"
             android:exported="true">
             <intent-filter>
+
+                <!-- Печать произвольных данных в чеке продажи -->
                 <action android:name="evo.v2.receipt.sell.printExtra.REQUIRED" />
+                <!-- Печать произвольных данных в чеке возврата -->
+                <action android:name="evo.v2.receipt.payback.printExtra.REQUIRED" />
+                <!-- Печать произвольных данных в чеке покупки -->
+                <action android:name="evo.v2.receipt.buy.printExtra.REQUIRED" />
+                <!-- Печать произвольных данных в чеке возврата покупки -->
+                <action android:name="evo.v2.receipt.buyback.printExtra.REQUIRED" />
             </intent-filter>
         </service>
         <service
             android:name=".SplitReceiptWithPrintGroupsService"
-            android:enabled="true"
+            android:enabled="false"
             android:exported="true">
             <intent-filter>
 
@@ -130,8 +147,8 @@
                 <action android:name="evo.v2.receipt.buy.printGroup.REQUIRED" />
             </intent-filter>
         </service>
-        <activity android:name=".MyPaymentActivity" />
 
+        <activity android:name=".MyPaymentActivity" />
     </application>
 
 </manifest>

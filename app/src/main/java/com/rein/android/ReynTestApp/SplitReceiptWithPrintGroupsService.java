@@ -41,7 +41,7 @@ public class SplitReceiptWithPrintGroupsService extends IntegrationService {
         //Создаём печатные группы (чеки), для каждого покупателя.
         PrintGroup firstReceipt = new PrintGroup(
                 //Идентифискатор печатной группы (чека покупателя).
-                "241e9344-ef50-46bc-9ce2-443c38b649e5",
+                "1",
                 //Тип чека, например, кассовый чек.
                 PrintGroup.Type.CASH_RECEIPT,
                 //Наименование покупателя.

@@ -16,7 +16,7 @@ import ru.evotor.framework.payment.PaymentType;
 /**
  * Пример операции для службы взаимодействия со сторонними платёжными системами
  */
-class MyPaymentActivity extends IntegrationActivity {
+public class MyPaymentActivity extends IntegrationActivity {
     public static final String EXTRA_NAME_OPERATION = "EXTRA_NAME_OPERATION";
 
     @Override
@@ -39,7 +39,7 @@ class MyPaymentActivity extends IntegrationActivity {
                 slip.add("RRN:");
                 slip.add(rrn.toString());
                 slip.add("SLIP EMD");
-                setIntegrationResult(new PaymentSystemPaymentOkResult(rrn.toString(), slip, "123qwe", PaymentType.CREDIT));
+                setIntegrationResult(new PaymentSystemPaymentOkResult("", slip, "123qwe", PaymentType.ELECTRON));
                 finish();
             }
         });

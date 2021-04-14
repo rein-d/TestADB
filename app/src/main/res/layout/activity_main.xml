@@ -9,42 +9,42 @@
 
 
     <Button
-        android:id="@+id/button4"
+        android:id="@+id/OpenSellReceiptButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="OpenSellReceipt"
         android:textAlignment="center" />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/CorrectionButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Коррекция"
         android:textAlignment="center" />
 
     <Button
-        android:id="@+id/button6"
+        android:id="@+id/HttpRequestButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Send HTTP Request"
         android:textAlignment="center" />
 
     <Button
-        android:id="@+id/button3"
+        android:id="@+id/WebViewButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="WebView"
         android:textAlignment="center" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/PrintSellReceiptButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="PrintSellReceipt"
         android:textAlignment="center" />
 
     <Button
-        android:id="@+id/close_session"
+        android:id="@+id/CloseSessionButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Закрыть смену" />
