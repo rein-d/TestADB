@@ -9,10 +9,17 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="ru.evotor.permission.PAYMENT_SYSTEM" />
     <uses-permission android:name="ru.evotor.permission.PRINT_Z_REPORT" />
-    <uses-permission android:name="ru.evotor.pushnotifications.PUSH_RECEIVE" />
-    <uses-permission android:name="ru.evotor.permission.SELL_INTEGRATION_SERVICE" />
     <uses-permission android:name="ru.evotor.permission.PAYMENT_SYSTEM" />
+    <uses-permission android:name="ru.evotor.permission.BINARY_NETWORK"/>
 
+    <!-- Разрешение на использование службы для работы с чеком продажи  -->
+    <uses-permission android:name="ru.evotor.permission.SELL_INTEGRATION_SERVICE" />
+    <!-- Разрешение на использование службы для работы с чеком возврата  -->
+    <uses-permission android:name="ru.evotor.permission.PAYBACK_INTEGRATION_SERVICE" />
+    <!-- Разрешение на использование службы для работы с чеком покупки  -->
+    <uses-permission android:name="ru.evotor.permission.BUY_INTEGRATION_SERVICE" />
+    <!-- Разрешение на использование службы для работы с чеком возврата покупки  -->
+    <uses-permission android:name="ru.evotor.permission.BUYBACK_INTEGRATION_SERVICE" />
 
     <application
         android:allowBackup="true"
@@ -21,14 +28,20 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         tools:ignore="GoogleAppIndexingWarning">
+
+        <meta-data
+            android:name="app_uuid"
+            android:value="31138179-5106-4084-8ea1-17039ea9bf6e" />
+
         <receiver
             android:name=".MyCloseReceiptEvent"
-            android:enabled="true"
+            android:enabled="false"
             android:exported="true">
             <intent-filter>
                 <action android:name="evotor.intent.action.receipt.sell.RECEIPT_CLOSED" />
             </intent-filter>
         </receiver>
+
         <service
             android:name=".MyPaymentService"
             android:enabled="true"
@@ -55,14 +68,19 @@
                 <action android:name="evotor.intent.action.receipt.sell.RECEIPT_CLOSED" />
             </intent-filter>
         </receiver>
+
         <service
-            android:name="MyDiscountService"
+            android:name=".MyDiscountService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
+                <category android:name="android.intent.category.DEFAULT" />
                 <action android:name="evo.v2.receipt.sell.receiptDiscount" />
+                <!-- Подписывает службу на событие ReceiptDiscountEvent и указывает смарт-терминалу отображать иконку приложения на экране оплаты чека возврата. -->
+                <action android:name="evo.v2.receipt.payback.receiptDiscount" />
             </intent-filter>
         </service>
+
         <activity
             android:name=".MainActivity"
             android:icon="@mipmap/ic_launcher">
@@ -81,13 +99,9 @@
             android:name=".ActivityWebView"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
 
-        <meta-data
-            android:name="app_uuid"
-            android:value="31138179-5106-4084-8ea1-17039ea9bf6e" />
-
         <service
             android:name=".SplitPaymentService"
-            android:enabled="true"
+            android:enabled="false"
             android:exported="true">
             <intent-filter>
 
@@ -106,10 +120,9 @@
             </intent-filter>
         </receiver>
 
-
         <service
             android:name=".ChangePositions"
-            android:enabled="true"
+            android:enabled="false"
             android:exported="true">
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT" />
@@ -145,6 +158,19 @@
                 <action android:name="evo.v2.receipt.payback.printGroup.REQUIRED" />
                 <!-- будет напечатан чек покупки -->
                 <action android:name="evo.v2.receipt.buy.printGroup.REQUIRED" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".MyAdditionalScreenEvent"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="ru.evotor.permission.SELL_INTEGRATION_SERVICE">
+            <!-- служба использует необходимое разрешение -->
+            <intent-filter>
+                <!-- добавляет иконку на экран оплаты чека -->
+                <action android:name="ru.evotor.event.sell.DISCOUNT_SCREEN_ADDITIONAL_ITEMS"/>
+                <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </service>
 
