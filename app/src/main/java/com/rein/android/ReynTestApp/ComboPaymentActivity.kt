@@ -13,14 +13,13 @@ import ru.evotor.framework.payment.PaymentPurpose
 import ru.evotor.framework.payment.PaymentType
 import ru.evotor.framework.receipt.Receipt
 import ru.evotor.framework.receipt.ReceiptApi
-import ru.evotor.framework.sumByBigDecimal
-import ru.xcam.evotor.example.R
 import java.math.BigDecimal
 import java.util.*
 import kotlin.concurrent.thread
 
 
 class ComboPaymentActivity : IntegrationActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_combo_payment)
@@ -114,6 +113,15 @@ class ComboPaymentActivity : IntegrationActivity() {
         setIntegrationResult(PaymentDelegatorSelectedEventResult(paymentPurpose, extra))
         finish()
     }
+
+    private inline fun <T> Iterable<T>.sumByBigDecimal(selector: (T) -> BigDecimal): BigDecimal {
+        var sum = BigDecimal.ZERO
+        for (element in this) {
+            sum += selector(element)
+        }
+        return sum
+    }
+
 }
 
 const val ADVANCE_PAYMENT_DESCRIPTION = "Предоплатой"

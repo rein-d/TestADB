@@ -1,6 +1,8 @@
 package com.rein.android.ReynTestApp;
 
+        import android.content.Intent;
         import android.os.RemoteException;
+        import android.widget.Toast;
 
 
         import androidx.annotation.NonNull;
@@ -15,6 +17,8 @@ package com.rein.android.ReynTestApp;
         import java.util.List;
         import java.util.Map;
 
+        import ru.evotor.framework.component.viewdata.IntegrationComponentViewDataApi;
+        import ru.evotor.framework.core.IntegrationAppCompatActivity;
         import ru.evotor.framework.core.IntegrationService;
         import ru.evotor.framework.core.action.event.receipt.changes.position.IPositionChange;
         import ru.evotor.framework.core.action.event.receipt.changes.position.SetExtra;
@@ -37,6 +41,7 @@ public class MyDiscountService extends IntegrationService {
             public void call(@NonNull String action, @NonNull ReceiptDiscountEvent event, @NonNull Callback callback) {
                 try {
                     //Значение скидки на весь чек в рублях или иной валюте
+
                     BigDecimal discount = new BigDecimal(10);
                     JSONObject object = new JSONObject();
                     object.put("Extra Discount on Receipt", "AWESOME DISCOUNT");

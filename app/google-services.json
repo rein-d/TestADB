@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "959383836119",
-    "project_id": "myprojectevotor",
-    "storage_bucket": "myprojectevotor.appspot.com"
+    "project_number": "437993657496",
+    "project_id": "appevotortest",
+    "storage_bucket": "appevotortest.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:959383836119:android:ebe56f41e651d4ccef6792",
+        "mobilesdk_app_id": "1:437993657496:android:79264bf3cee0387244eced",
         "android_client_info": {
           "package_name": "com.rein.android.ReynTestApp"
         }
       },
       "oauth_client": [
         {
-          "client_id": "959383836119-h02cu3ds5ujprdr6auqg0lpu6gmafkqf.apps.googleusercontent.com",
+          "client_id": "437993657496-tl9jud5ch0vkil2rkjm6gsisbbgi4aob.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAgkZJHCYWMJx0Nj4mZ1EWnpOlcyKIjSJw"
+          "current_key": "AIzaSyDXmpDFJLlU0TRWTfYGNXJwgyJKLtMwisM"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "959383836119-h02cu3ds5ujprdr6auqg0lpu6gmafkqf.apps.googleusercontent.com",
+              "client_id": "437993657496-tl9jud5ch0vkil2rkjm6gsisbbgi4aob.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

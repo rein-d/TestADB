@@ -33,7 +33,7 @@ public class ChangePositions extends IntegrationService {
             public void call(@NonNull String action, @NonNull BeforePositionsEditedEvent event, @NonNull Callback callback){
                 List<IPositionChange> changes = event.getChanges();
                 Set<ExtraKey> someExtraKey = new HashSet<>();
-                someExtraKey.add(new ExtraKey(null, "31138179-5106-4084-8ea1-17039ea9bf6e", "Тест Позиция Изменена"));
+                someExtraKey.add(new ExtraKey(null, "<app_uuid>", "Добавление скиддки к позиции"));
 
                     for (IPositionChange change : event.getChanges()) {
                         if (change instanceof PositionEdit) {

@@ -23,5 +23,9 @@
 -keepattributes SourceFile,LineNumberTable
 -keep public class * extends java.lang.Exception
 
+# Firebase
+-keep class com.google.android.gms.** { *; }
+-keep class com.google.firebase.** { *; }
+
 -keep class com.crashlytics.** { *; }
 -dontwarn com.crashlytics.**

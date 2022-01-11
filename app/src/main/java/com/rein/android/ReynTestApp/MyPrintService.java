@@ -4,7 +4,9 @@ package com.rein.android.ReynTestApp;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.nfc.Tag;
 import android.os.RemoteException;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -54,16 +56,8 @@ public class MyPrintService extends IntegrationService {
      * @param fileName имя файла
      * @return значение типа Bitmap
      */
-    private Bitmap getBitmapFromAsset(String fileName) {
-        AssetManager assetManager = getAssets();
-        InputStream stream = null;
-        try {
-            stream = assetManager.open(fileName);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return BitmapFactory.decodeStream(stream);
-    }
+
+    private static final String TAG = "MyApp123";
     public static final Locale LOCALE_DEC = Locale.US;
     private DecimalFormat mDecimalFormat = new DecimalFormat("0.00", DecimalFormatSymbols.getInstance(LOCALE_DEC));
 
@@ -77,6 +71,8 @@ public class MyPrintService extends IntegrationService {
                     @Override
                     public void call(@NotNull String s, @NotNull PrintExtraRequiredEvent printExtraRequiredEvent, @NotNull Callback callback) {
                         List<SetPrintExtra> setPrintExtras = new ArrayList<>();
+                        Receipt MyReceipt124 = ReceiptApi.getReceipt(MyPrintService.this, Receipt.Type.SELL);
+                        Log.d(TAG, "Uuid чека: "+MyReceipt124.getHeader().getNumber());
 
                         setPrintExtras.add(new SetPrintExtra(
                                 //Метод, который указывает место, где будут распечатаны данные.
@@ -87,7 +83,7 @@ public class MyPrintService extends IntegrationService {
                                         //Простой текст
                                         new PrintableText("Proin eget tortor risus. Nulla quis lorem ut libero malesuada feugiat. Proin eget tortor risus."),
                                         //Штрихкод с контрольной суммой если она требуется для выбранного типа штрихкода
-                                        new PrintableBarcode("4750232005910", PrintableBarcode.BarcodeType.EAN13),
+                                       // new PrintableBarcode("4750232005910", PrintableBarcode.BarcodeType.EAN13),
                                         //Изображение
                                        // new PrintableImage(getBitmapFromAsset("ic_launcher.png"))
                                 }
@@ -96,8 +92,8 @@ public class MyPrintService extends IntegrationService {
                                 //Данные печатаются после текста “Кассовый чек”, до имени пользователя
                                 new PrintExtraPlacePrintGroupHeader(null),
                                 new IPrintable[]{
-                                        new PrintableBarcode("4750232005910", PrintableBarcode.BarcodeType.EAN13),
-                                        new PrintableText("Proin eget tortor risus. Nulla quis lorem ut libero malesuada feugiat. Proin eget tortor risus.")
+                                        //new PrintableBarcode("4750232005910", PrintableBarcode.BarcodeType.EAN13),
+                                        //new PrintableText("Proin eget tortor risus. Nulla quis lorem ut libero malesuada feugiat. Proin eget tortor risus.")
                                 }
                         ));
                         //Добавляем к каждой позиции чека продажи необходимые данные

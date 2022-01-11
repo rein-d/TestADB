@@ -1,6 +1,8 @@
 package com.rein.android.ReynTestApp;
 
+import android.content.Intent;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,6 +19,7 @@ public class MyAdditionalScreenEvent extends SellIntegrationService {
         String TAG = "MyApp";
         Log.d(TAG, "test");
 
+        Toast.makeText(MyAdditionalScreenEvent.this, "Helloнелсенлсвегасгндамдгнамгмгндасгндвскев", Toast.LENGTH_LONG).show();
         return super.handleEvent(event);
     }
 }

@@ -1,14 +1,14 @@
 package com.rein.android.ReynTestApp;
 
 
-import android.app.Activity;
+import static ru.evotor.framework.kkt.api.KktApi.receiveKktSerialNumber;
+import static ru.evotor.framework.receipt.TaxationSystem.COMMON;
+
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
@@ -17,19 +17,13 @@ import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,11 +31,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import okhttp3.Headers;
-import okhttp3.MediaType;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 import ru.evotor.framework.component.PaymentPerformer;
 import ru.evotor.framework.component.PaymentPerformerApi;
@@ -50,9 +48,7 @@ import ru.evotor.framework.core.IntegrationActivity;
 import ru.evotor.framework.core.IntegrationException;
 import ru.evotor.framework.core.IntegrationManagerCallback;
 import ru.evotor.framework.core.IntegrationManagerFuture;
-import ru.evotor.framework.core.action.command.open_receipt_command.OpenPaybackReceiptCommand;
 import ru.evotor.framework.core.action.command.open_receipt_command.OpenSellReceiptCommand;
-import ru.evotor.framework.core.action.command.print_receipt_command.PrintPaybackReceiptCommand;
 import ru.evotor.framework.core.action.command.print_receipt_command.PrintReceiptCommandResult;
 import ru.evotor.framework.core.action.command.print_receipt_command.PrintSellReceiptCommand;
 import ru.evotor.framework.core.action.command.print_z_report_command.PrintZReportCommand;
@@ -79,19 +75,12 @@ import ru.evotor.framework.receipt.correction.CorrectionType;
 import ru.evotor.framework.receipt.formation.api.ReceiptFormationCallback;
 import ru.evotor.framework.receipt.formation.api.ReceiptFormationException;
 import ru.evotor.framework.receipt.formation.api.SellApi;
-import ru.evotor.framework.receipt.position.AgentRequisites;
 import ru.evotor.framework.receipt.position.SettlementMethod;
 import ru.evotor.framework.receipt.position.VatRate;
 
-import static com.rein.android.ReynTestApp.MyPaymentService.TAG;
-import static ru.evotor.framework.kkt.api.KktApi.receiveKktSerialNumber;
-import static ru.evotor.framework.receipt.TaxationSystem.COMMON;
-
-
 
 public class MainActivity extends IntegrationActivity {
-    private Activity m_Activity = this;
-    public static final String TAG1 = "MyApp";
+    public static final String TAG = "MyApp";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,90 +88,71 @@ public class MainActivity extends IntegrationActivity {
         setContentView(R.layout.activity_main);
 
 
-        findViewById(R.id.PrintSellReceiptButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-               // m_Activity.startActivityForResult(NavigationApi.createIntentForSellReceiptEdit(true),0);
-                openReceiptAndEmail();
+        findViewById(R.id.PrintSellReceiptButton).setOnClickListener(view -> {
+           // m_Activity.startActivityForResult(NavigationApi.createIntentForSellReceiptEdit(true),0);
+            openReceiptAndEmail();
 
 
-            }
         });
 
-        findViewById(R.id.CorrectionButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        findViewById(R.id.CorrectionButton).setOnClickListener(view -> Correction());
 
-                Correction();
+        findViewById(R.id.OpenSellReceiptButton).setOnClickListener(view -> {
+            String KktNumber = receiveKktSerialNumber(getApplicationContext());
+            openReceipt();
+            //NavigationApi.createIntentForChangeUser();
+            //Toast.makeText(MainActivity.this, KktNumber, Toast.LENGTH_LONG).show();
 
-            }
+
         });
-        findViewById(R.id.OpenSellReceiptButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String KktNumber = receiveKktSerialNumber(getApplicationContext());
-                openReceipt();
-                //NavigationApi.createIntentForChangeUser();
-                //Toast.makeText(MainActivity.this, KktNumber, Toast.LENGTH_LONG).show();
+        findViewById(R.id.WebViewButton).setOnClickListener(view -> {
+            /*Log.v(TAG, "Hello Evotor!");
+            List<Grant> userGrants = getAllGrants(this);
+            Log.v(TAG, userGrants.toString());*/
+            startActivity(new Intent(this, ActivityWebView.class));
+            //throw new RuntimeException("Test Crash"); // Force a crash
 
-
-            }
-        });
-        findViewById(R.id.WebViewButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //startActivity(new Intent(MainActivity.this, ActivityWebView.class));
-                throw new RuntimeException("This is a crash... AHHHHH!!!!");
-
-            }
         });
 
-        findViewById(R.id.HttpRequestButton).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.HttpRequestButton).setOnClickListener(view -> {
 
-            @Override
-            public void onClick(View view) {
+            trustAllCertificates();
 
-                Thread thread = new Thread() {
-                    @Override
-                    public void run() {
-                        try {
-                            putRequestWithHeaderAndBody();
-                        } catch (IOException e) {
-                            e.printStackTrace();
+            Thread thread = new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        putRequestWithHeaderAndBody();
+                    } catch (IOException e) {
+                        e.printStackTrace();
 
-                        }
                     }
-                };
-                thread.start();
-            }
+                }
+            };
+            thread.start();
         });
-        findViewById(R.id.CloseSessionButton).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.CloseSessionButton).setOnClickListener(view -> new PrintZReportCommand().process(MainActivity.this, new IntegrationManagerCallback() {
             @Override
-            public void onClick(View view) {
-                new PrintZReportCommand().process(MainActivity.this, new IntegrationManagerCallback() {
-                    @Override
-                    public void run(IntegrationManagerFuture future) {
-                        try {
-                            IntegrationManagerFuture.Result result = future.getResult();
-                            switch (result.getType()) {
-                                case OK:
-                                    PrintZReportCommandResult printSellReceiptResult = PrintZReportCommandResult.create(result.getData());
-                                    break;
-                                case ERROR:
-                                    Toast.makeText(MainActivity.this, result.getError().getMessage(), Toast.LENGTH_LONG).show();
-                                    Error error = result.getError();
-                                    Log.i(getPackageName(), "e.code: " + error.getCode() + "; e.msg: " + error.getMessage());
-                                    //alertMainValue(error.getMessage());
-                                    break;
-                            }
-                        } catch (IntegrationException e) {
-
-                            e.printStackTrace();
-                        }
+            public void run(IntegrationManagerFuture future) {
+                try {
+                    IntegrationManagerFuture.Result result = future.getResult();
+                    switch (result.getType()) {
+                        case OK:
+                            PrintZReportCommandResult printSellReceiptResult = PrintZReportCommandResult.create(result.getData());
+                            break;
+                        case ERROR:
+                            Toast.makeText(MainActivity.this, result.getError().getMessage(), Toast.LENGTH_LONG).show();
+                            Error error = result.getError();
+                            Log.i(getPackageName(), "e.code: " + error.getCode() + "; e.msg: " + error.getMessage());
+                            //alertMainValue(error.getMessage());
+                            break;
                     }
-                });
+                } catch (IntegrationException e) {
+
+                    e.printStackTrace();
+                }
             }
-        });
+        }));
 
 
     }
@@ -195,7 +165,7 @@ public class MainActivity extends IntegrationActivity {
 
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
-                .url("https://webhook.site/a7aee7ba-824c-46ce-b229-82e4a5fdde84")
+                .url("https://webhook.site/1828d94a-2542-41cf-8b1f-6d4db351c3f9")
                 .build();
 
         Response response = client.newCall(request).execute();
@@ -203,54 +173,18 @@ public class MainActivity extends IntegrationActivity {
         if (!response.isSuccessful()) {
             throw new IOException("Unexpected response code: " + response);
         }
-        System.out.println(response.body().string());
+        Toast.makeText(this, response.body().toString(), Toast.LENGTH_LONG);
     }
 
 
-    public void SendHttpRequest() throws UnsupportedEncodingException {
 
-        String text = "";
-        BufferedReader reader = null;
-
-        // Send data
-        try {
-
-            // Defined URL  where to send data
-            URL url = new URL("https://webhook.site/a7aee7ba-824c-46ce-b229-82e4a5fdde84");
-            String data = URLEncoder.encode("Abrakadabra1234radfeer3455", "UTF-8")
-                    + ":" + URLEncoder.encode("admin", "UTF-8");
-            // Send POST data request
-
-            URLConnection conn = url.openConnection();
-            conn.setDoOutput(true);
-            OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
-            //wr.write(data);
-            wr.flush();
-
-            // Get the server response
-
-            reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            StringBuilder sb = new StringBuilder();
-            String line = null;
-
-            // Read Server Response
-            while ((line = reader.readLine()) != null) {
-                // Append server response in string
-                sb.append(line + "\n");
-            }
-
-
-            text = sb.toString();
-        } catch (Exception ex) {
-        }
-    }
 
 
     public void Correction() {
         SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
         Date correctableSettlementDate = Calendar.getInstance().getTime();
         try {
-            correctableSettlementDate = format.parse("26.09.2019");
+            correctableSettlementDate = format.parse("26.09.2021");
         } catch (Exception e) {
 
         }
@@ -273,8 +207,8 @@ public class MainActivity extends IntegrationActivity {
             e.printStackTrace();
         }
 
-        KktApi.registerCorrectionReceipt(getApplicationContext(), SettlementType.INCOME,
-                COMMON, CorrectionType.BY_PRESCRIBED, "unknown", "1",
+        KktApi.registerCorrectionReceipt(getApplicationContext(), SettlementType.OUTCOME,
+                COMMON, CorrectionType.BY_SELF, "unknown", "1",
                 correctableSettlementDate, new BigDecimal(10).setScale(2, BigDecimal.ROUND_HALF_UP), PaymentType.CASH, VatRate.VAT_20_120,
                 "correction", callback);
     }
@@ -288,73 +222,58 @@ public class MainActivity extends IntegrationActivity {
         List<Position> list = new ArrayList<>();
         List<String> phones = new ArrayList<>();
         phones.add("89631654555");
-        //позиция 1
-        list.add(
-                Position.Builder.newInstance(
-                        //UUID позиции
-                        UUID.randomUUID().toString(),
-                        //UUID товара
-                        "",
-                        //Наименование
-                        "123Товар321",
-                        //Наименование единицы измерения
-                        "шт",
-                        //Точность единицы измерения
-                        0,
-                        //Цена без скидок
-                        new BigDecimal(2000),
-                        //Количество
-                        new BigDecimal(1)
-                )
 
-                      //  .setAgentRequisites(AgentRequisites.createForAgent("070704218872", phones))
+        for (int i = 1; i < 2; i++) {
+            //позиция 1
+            list.add(
+                    Position.Builder.newInstance(
+                            //UUID позиции
+                            UUID.randomUUID().toString(),
+                            //UUID товара
+                            UUID.randomUUID().toString(),
+                            //Наименование
+                            UUID.randomUUID().toString(),
+                            //Наименование единицы измерения
+                            "шт",
+                            //Точность единицы измерения
+                            0,
+                            //Цена без скидок
+                            new BigDecimal(1000),
+                            //Количество
+                            new BigDecimal(1)
+                    )
 
-
-                        .setProductCode("2354ASV455")
-                        .setSettlementMethod(new SettlementMethod.PartialSettlement(new BigDecimal(1000)))
-                        .setTaxNumber(TaxNumber.NO_VAT)
-                        .setExtraKeys(set) //Установка Extra-информации. Данные будут напечатаны на чеке
-                        //Установка цены с учетом скидки:
-                        //.setPriceWithDiscountPosition(new BigDecimal(500))
-                        .build()
-        );
+                            // .setAgentRequisites(AgentRequisites.createForAgent("070704218872", phones))
 
 
+                            //.setProductCode("2354ASV455")
+                            //.setSettlementMethod(new SettlementMethod.PartialPrepayment())
+                            .setTaxNumber(TaxNumber.NO_VAT)
+                            //.setExtraKeys(set) //Установка Extra-информации. Данные будут напечатаны на чеке
+                            //Установка цены с учетом скидки:
+                            //.setPriceWithDiscountPosition(new BigDecimal(500))
+                            .build()
+            );
+        }
         HashMap payments = new HashMap<Payment, BigDecimal>();
         //установка способа оплаты
         //1
-        payments.put(new Payment(
+        Payment payment1 = new Payment(
                 UUID.randomUUID().toString(),
                 new BigDecimal(1000),
                 null,
                 new PaymentPerformer(
-                        new PaymentSystem(PaymentType.ADVANCE, "userDescription", "paymentSystemId"),
-                        "packageName",
-                        "componentName",
-                        "appUuid",
-                        "appName"
+                        new PaymentSystem(PaymentType.ELECTRON, "Оплата по безналу", "com.rein.android.ReynTestApp"),
+                        null,
+                        null,
+                        null,
+                        null
                 ),
                 null,
                 null,
                 null
-        ), new BigDecimal(1000));
-
-        payments.put(new Payment(
-                UUID.randomUUID().toString(),
-                new BigDecimal(1000),
-                null,
-                new PaymentPerformer(
-                        new PaymentSystem(PaymentType.CREDIT, "userDescription", "paymentSystemId"),
-                        "packageName",
-                        "componentName",
-                        "appUuid",
-                        "appName"
-                ),
-                null,
-                null,
-                null
-        ), new BigDecimal(1000));
-
+        );
+        payments.put(payment1, new BigDecimal(1000));
 
 
         Purchaser firstLegalEntity = new Purchaser(
@@ -363,7 +282,7 @@ public class MainActivity extends IntegrationActivity {
                 //Номер документа покупателя, например, ИНН или номер паспорта иностранного гражданина. Данные сохраняются в теге 1228 фискального документа.
                 "4511161108",
                 //Тип покупателя, например, юр. лицо. Не сохраняется в фискальном документе.
-                PurchaserType.NATURAL_PERSON);
+                PurchaserType.ENTREPRENEUR);
 
         PrintGroup printGroup = new PrintGroup(UUID.randomUUID().toString(),
                 PrintGroup.Type.CASH_RECEIPT, null, null, null,
@@ -397,6 +316,7 @@ public class MainActivity extends IntegrationActivity {
                     switch (result.getType()) {
                         case OK:
                             PrintReceiptCommandResult printSellReceiptResult = PrintReceiptCommandResult.create(result.getData());
+                            Log.d("ReynLogs", "payment id: "+payment1.getUuid().toString());
                             break;
                         case ERROR:
                             Toast.makeText(MainActivity.this, result.getError().getMessage(), Toast.LENGTH_LONG).show();
@@ -431,19 +351,21 @@ public class MainActivity extends IntegrationActivity {
                                 //UUID товара
                                 UUID.randomUUID().toString(),
                                 //Наименование
-                                "Товар1",
+                                "Тестовый товар укщтфщукжщжфукщыукщапфушщкапшщфукпшщфоукпшщфоукшщпофушщэкпощфшэцукоапфшоцукпшщэфоукщпшэофукшщэпофушщэкпошфщэуокпэшщфуокпшщэфоукэшщпофуэщшкпофщшэукопэшфщуокпшщэфуокфшуокпшэоуэкшпофшущэкпофшщуэ123456789",
                                 //Наименование единицы измерения
-                                "кг",
+                                "шт",
                                 //Точность единицы измерения
                                 0,
                                 //Цена без скидок
                                 new BigDecimal(30000),
                                 //Количество
-                                BigDecimal.valueOf(1,1)
+                                BigDecimal.valueOf(1)
                                 //Добавление цены с учетом скидки на позицию. Итог = price - priceWithDiscountPosition
                         )
-                                .setSettlementMethod(new SettlementMethod.Lend())
-                                .setExtraKeys(set) //Extras
+                                //.toService()
+
+                                //.setSettlementMethod(new SettlementMethod.Lend())
+                                //.setExtraKeys(set) //Extras
                                 //.setAgentRequisites(AgentRequisites.createForAgent("070704218872", Collections.singletonList("79776030448")))
                                 //Добавление цены с учетом скидки на позицию. Итог = price - priceWithDiscountPosition
                                 //.setPriceWithDiscountPosition(new BigDecimal(20000))
@@ -463,7 +385,7 @@ public class MainActivity extends IntegrationActivity {
         SetExtra extra = new SetExtra(object);
 
         //Открытие чека продажи. Передаются: список наименований, дополнительные поля для приложения
-        new OpenSellReceiptCommand(positionAddList, extra).process(MainActivity.this, new IntegrationManagerCallback() {
+        new OpenSellReceiptCommand(positionAddList, null).process(this, new IntegrationManagerCallback() {
             @Override
             public void run(IntegrationManagerFuture future) {
 
@@ -471,20 +393,18 @@ public class MainActivity extends IntegrationActivity {
                     IntegrationManagerFuture.Result result = future.getResult();
                     if (result.getType() == IntegrationManagerFuture.Result.Type.OK) {
 
-                                        Receipt MyReceipt124 = ReceiptApi.getReceipt(MainActivity.this, Receipt.Type.SELL);
-                                        MyReceipt124.getPrintDocuments();
-                                        String Receipt_uuid = MyReceipt124.getHeader().getUuid();
+                                        String Receipt_uuid = ReceiptApi.getReceipt(MainActivity.this, Receipt.Type.SELL).getHeader().getUuid();
                                         Toast.makeText(MainActivity.this, Receipt_uuid, Toast.LENGTH_LONG).show();
 
-                                        Intent intent = new Intent("evotor.intent.action.payment.SELL");
-
-                                        startActivity(intent);
+                                        /*Intent intent = new Intent("evotor.intent.action.payment.SELL");
+                                        startActivity(intent);*/
+                        startActivity(NavigationApi.createIntentForSellReceiptPayment());
 
 
                 ////////////////////SellAPI////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-                        /*String uuid = MyReceipt124.getHeader().getUuid();
+                      /*  String uuid = MyReceipt124.getHeader().getUuid();
 
                         final List<PaymentPerformer> paymentPerformers123 = PaymentPerformerApi.INSTANCE.getAllPaymentPerformers(getPackageManager());
                         AlertDialog.Builder builderSingle = new AlertDialog.Builder(MainActivity.this);
@@ -501,7 +421,7 @@ public class MainActivity extends IntegrationActivity {
                                 SellApi.moveCurrentReceiptDraftToPaymentStage(MainActivity.this, paymentPerformers123.get(which), new ReceiptFormationCallback() {
                                     @Override
                                     public void onSuccess() {
-                                        Toast.makeText(MainActivity.this, "Оплата прошла успешно", Toast.LENGTH_LONG).show();
+                                        Toast.makeText(MainActivity.this, "Передаем чек на оплату", Toast.LENGTH_LONG).show();
                                     }
 
                                     @Override
@@ -522,6 +442,38 @@ public class MainActivity extends IntegrationActivity {
                 }
             }
         });
+    }
+
+    public void trustAllCertificates() {
+        try {
+            TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        public X509Certificate[] getAcceptedIssuers() {
+                            X509Certificate[] myTrustedAnchors = new X509Certificate[0];
+                            return myTrustedAnchors;
+                        }
+
+                        @Override
+                        public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                        }
+
+                        @Override
+                        public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                        }
+                    }
+            };
+
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustAllCerts, new SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+            HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+                @Override
+                public boolean verify(String arg0, SSLSession arg1) {
+                    return true;
+                }
+            });
+        } catch (Exception e) {
+        }
     }
 
 
