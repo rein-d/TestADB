@@ -9,8 +9,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
+
+import androidx.viewpager.widget.ViewPager;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -48,6 +51,7 @@ import ru.evotor.framework.core.IntegrationActivity;
 import ru.evotor.framework.core.IntegrationException;
 import ru.evotor.framework.core.IntegrationManagerCallback;
 import ru.evotor.framework.core.IntegrationManagerFuture;
+import ru.evotor.framework.core.action.command.open_receipt_command.OpenPaybackReceiptCommand;
 import ru.evotor.framework.core.action.command.open_receipt_command.OpenSellReceiptCommand;
 import ru.evotor.framework.core.action.command.print_receipt_command.PrintReceiptCommandResult;
 import ru.evotor.framework.core.action.command.print_receipt_command.PrintSellReceiptCommand;
@@ -82,11 +86,11 @@ import ru.evotor.framework.receipt.position.VatRate;
 public class MainActivity extends IntegrationActivity {
     public static final String TAG = "MyApp";
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
 
         findViewById(R.id.PrintSellReceiptButton).setOnClickListener(view -> {
            // m_Activity.startActivityForResult(NavigationApi.createIntentForSellReceiptEdit(true),0);
@@ -220,6 +224,7 @@ public class MainActivity extends IntegrationActivity {
         set.add(new ExtraKey(null, "31138179-5106-4084-8ea1-17039ea9bf6e", "123"));
         //Создание списка товаров чека
         List<Position> list = new ArrayList<>();
+
         List<String> phones = new ArrayList<>();
         phones.add("89631654555");
 
@@ -339,7 +344,7 @@ public class MainActivity extends IntegrationActivity {
     public void openReceipt() {
         //Создание списка товаров чека
         List<PositionAdd> positionAddList = new ArrayList<>();
-
+        List<PositionAdd> nullPositionAddList = new ArrayList<>();
         Set<ExtraKey> set = new HashSet<>();
         set.add(new ExtraKey(null, "31138179-5106-4084-8ea1-17039ea9bf6e", "Абракадабра123987"));
 
@@ -351,7 +356,7 @@ public class MainActivity extends IntegrationActivity {
                                 //UUID товара
                                 UUID.randomUUID().toString(),
                                 //Наименование
-                                "Тестовый товар укщтфщукжщжфукщыукщапфушщкапшщфукпшщфоукпшщфоукшщпофушщэкпощфшэцукоапфшоцукпшщэфоукщпшэофукшщэпофушщэкпошфщэуокпэшщфуокпшщэфоукэшщпофуэщшкпофщшэукопэшфщуокпшщэфуокфшуокпшэоуэкшпофшущэкпофшщуэ123456789",
+                                "Тестовый товар",
                                 //Наименование единицы измерения
                                 "шт",
                                 //Точность единицы измерения
@@ -364,7 +369,7 @@ public class MainActivity extends IntegrationActivity {
                         )
                                 //.toService()
 
-                                //.setSettlementMethod(new SettlementMethod.Lend())
+                                //.setSettlementMethod(new SettlementMethod.AdvancePayment())
                                 //.setExtraKeys(set) //Extras
                                 //.setAgentRequisites(AgentRequisites.createForAgent("070704218872", Collections.singletonList("79776030448")))
                                 //Добавление цены с учетом скидки на позицию. Итог = price - priceWithDiscountPosition
@@ -396,17 +401,13 @@ public class MainActivity extends IntegrationActivity {
                                         String Receipt_uuid = ReceiptApi.getReceipt(MainActivity.this, Receipt.Type.SELL).getHeader().getUuid();
                                         Toast.makeText(MainActivity.this, Receipt_uuid, Toast.LENGTH_LONG).show();
 
-                                        /*Intent intent = new Intent("evotor.intent.action.payment.SELL");
-                                        startActivity(intent);*/
-                        startActivity(NavigationApi.createIntentForSellReceiptPayment());
+
+                       startActivity(NavigationApi.createIntentForSellReceiptPayment());
 
 
                 ////////////////////SellAPI////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-                      /*  String uuid = MyReceipt124.getHeader().getUuid();
-
-                        final List<PaymentPerformer> paymentPerformers123 = PaymentPerformerApi.INSTANCE.getAllPaymentPerformers(getPackageManager());
+                        /*final List<PaymentPerformer> paymentPerformers123 = PaymentPerformerApi.INSTANCE.getAllPaymentPerformers(getPackageManager());
                         AlertDialog.Builder builderSingle = new AlertDialog.Builder(MainActivity.this);
 
                         final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.select_dialog_singlechoice);
@@ -476,5 +477,17 @@ public class MainActivity extends IntegrationActivity {
         }
     }
 
-
+   /* @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        View mDecorView = getWindow().getDecorView();
+        if (hasFocus) {
+            mDecorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        }
+    }*/
 }
