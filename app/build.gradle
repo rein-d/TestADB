@@ -1,15 +1,17 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 30
+    buildToolsVersion "30.0.2"
     defaultConfig {
         applicationId "com.rein.android.ReynTestApp"
         minSdkVersion 23
         //noinspection OldTargetApi
-        targetSdkVersion 29
-        versionCode 150
-        versionName "5.0"
+        targetSdkVersion 30
+        versionCode 153
+        versionName "5.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
@@ -24,7 +26,7 @@ dependencies {
     androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    implementation group: 'com.github.evotor', name: 'integration-library', version: 'v0.4+'
+    implementation 'com.github.evotor:integration-library:v0.5.00'
 
 
     implementation 'androidx.appcompat:appcompat:1.3.1'

@@ -8,13 +8,12 @@
     <uses-permission android:name="ru.evotor.permission.receipt.print.INTERNET_RECEIPT" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="ru.evotor.permission.PAYMENT_SYSTEM" />
-
     <uses-permission android:name="ru.evotor.permission.PRINT_Z_REPORT" /> <!-- Разрешение на использование службы для работы с чеком продажи -->
     <uses-permission android:name="ru.evotor.permission.SELL_INTEGRATION_SERVICE" /> <!-- Разрешение на использование службы для работы с чеком возврата -->
     <uses-permission android:name="ru.evotor.permission.PAYBACK_INTEGRATION_SERVICE" /> <!-- Разрешение на использование службы для работы с чеком покупки -->
     <uses-permission android:name="ru.evotor.permission.BUY_INTEGRATION_SERVICE" /> <!-- Разрешение на использование службы для работы с чеком возврата покупки -->
     <uses-permission android:name="ru.evotor.permission.BUYBACK_INTEGRATION_SERVICE" />
-    <uses-permission android:name="ru.evotor.permission.BINARY_NETWORK"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -23,6 +22,17 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         tools:ignore="GoogleAppIndexingWarning">
+
+        <receiver
+            android:name=".AutoStart"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
+
         <receiver
             android:name=".MySellReceiver"
             android:enabled="false"
@@ -51,16 +61,13 @@
             android:enabled="true"
             android:exported="true"
             android:icon="@android:drawable/ic_dialog_map"
-            android:label="My Payment Service">
+            android:label="Моя оплата в кредит">
             <meta-data
                 android:name="ru.evotor.sales_screen.BACKGROUND_COLOR"
                 android:value="@android:color/holo_green_light" />
             <meta-data
                 android:name="ru.evotor.paymentSystem.PAYMENT_SYSTEM_ID"
                 android:value="com.rein.android.ReynTestApp" />
-            <meta-data
-                android:name="ru.evotor.launcher.GRANTS"
-                android:resource="@array/stub_grants" />
 
             <intent-filter>
                 <action android:name="evo.v2.receipt.paymentSystem" />
@@ -91,7 +98,8 @@
 
         <activity
             android:name=".MainActivity"
-            android:icon="@mipmap/ic_launcher">
+            android:icon="@mipmap/ic_launcher"
+            android:theme="@style/Theme.AppCompat">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -131,7 +139,7 @@
 
         <service
             android:name=".ChangePositions"
-            android:enabled="true"
+            android:enabled="false"
             android:exported="true">
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT" />

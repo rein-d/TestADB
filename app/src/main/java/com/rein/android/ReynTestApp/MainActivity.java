@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import androidx.fragment.app.FragmentManager;
 import androidx.viewpager.widget.ViewPager;
 
 import org.jetbrains.annotations.NotNull;
@@ -46,19 +47,25 @@ import okhttp3.Request;
 import okhttp3.Response;
 import ru.evotor.framework.component.PaymentPerformer;
 import ru.evotor.framework.component.PaymentPerformerApi;
+import ru.evotor.framework.component.viewdata.IntegrationComponentViewDataApi;
 import ru.evotor.framework.core.Error;
 import ru.evotor.framework.core.IntegrationActivity;
+import ru.evotor.framework.core.IntegrationAppCompatActivity;
 import ru.evotor.framework.core.IntegrationException;
 import ru.evotor.framework.core.IntegrationManagerCallback;
 import ru.evotor.framework.core.IntegrationManagerFuture;
 import ru.evotor.framework.core.action.command.open_receipt_command.OpenPaybackReceiptCommand;
 import ru.evotor.framework.core.action.command.open_receipt_command.OpenSellReceiptCommand;
+import ru.evotor.framework.core.action.command.print_receipt_command.PrintCorrectionIncomeReceiptCommand;
 import ru.evotor.framework.core.action.command.print_receipt_command.PrintReceiptCommandResult;
 import ru.evotor.framework.core.action.command.print_receipt_command.PrintSellReceiptCommand;
 import ru.evotor.framework.core.action.command.print_z_report_command.PrintZReportCommand;
 import ru.evotor.framework.core.action.command.print_z_report_command.PrintZReportCommandResult;
 import ru.evotor.framework.core.action.event.receipt.changes.position.PositionAdd;
 import ru.evotor.framework.core.action.event.receipt.changes.position.SetExtra;
+import ru.evotor.framework.fs.FsFiscalizationDocument;
+import ru.evotor.framework.fs.api.FsApi;
+import ru.evotor.framework.kkt.FfdVersion;
 import ru.evotor.framework.kkt.api.DocumentRegistrationCallback;
 import ru.evotor.framework.kkt.api.DocumentRegistrationException;
 import ru.evotor.framework.kkt.api.KktApi;
@@ -66,6 +73,7 @@ import ru.evotor.framework.navigation.NavigationApi;
 import ru.evotor.framework.payment.PaymentSystem;
 import ru.evotor.framework.payment.PaymentType;
 import ru.evotor.framework.receipt.ExtraKey;
+import ru.evotor.framework.receipt.Measure;
 import ru.evotor.framework.receipt.Payment;
 import ru.evotor.framework.receipt.Position;
 import ru.evotor.framework.receipt.PrintGroup;
@@ -79,11 +87,12 @@ import ru.evotor.framework.receipt.correction.CorrectionType;
 import ru.evotor.framework.receipt.formation.api.ReceiptFormationCallback;
 import ru.evotor.framework.receipt.formation.api.ReceiptFormationException;
 import ru.evotor.framework.receipt.formation.api.SellApi;
+import ru.evotor.framework.receipt.position.AgentRequisites;
 import ru.evotor.framework.receipt.position.SettlementMethod;
 import ru.evotor.framework.receipt.position.VatRate;
 
 
-public class MainActivity extends IntegrationActivity {
+public class MainActivity extends IntegrationAppCompatActivity {
     public static final String TAG = "MyApp";
 
 
@@ -91,15 +100,14 @@ public class MainActivity extends IntegrationActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Log.d("DestroyTest", "Activity Created");
 
         findViewById(R.id.PrintSellReceiptButton).setOnClickListener(view -> {
            // m_Activity.startActivityForResult(NavigationApi.createIntentForSellReceiptEdit(true),0);
             openReceiptAndEmail();
-
-
         });
 
-        findViewById(R.id.CorrectionButton).setOnClickListener(view -> Correction());
+        findViewById(R.id.CorrectionButton).setOnClickListener(view -> newCorrectionFFD12());
 
         findViewById(R.id.OpenSellReceiptButton).setOnClickListener(view -> {
             String KktNumber = receiveKktSerialNumber(getApplicationContext());
@@ -110,11 +118,8 @@ public class MainActivity extends IntegrationActivity {
 
         });
         findViewById(R.id.WebViewButton).setOnClickListener(view -> {
-            /*Log.v(TAG, "Hello Evotor!");
-            List<Grant> userGrants = getAllGrants(this);
-            Log.v(TAG, userGrants.toString());*/
-            startActivity(new Intent(this, ActivityWebView.class));
-            //throw new RuntimeException("Test Crash"); // Force a crash
+
+            throw new RuntimeException("Test Crash"); // Force a crash
 
         });
 
@@ -160,10 +165,42 @@ public class MainActivity extends IntegrationActivity {
 
 
     }
-    /*
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d("DestroyTest", "Activity Destroyed");
+    }
 
-     */
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d("DestroyTest", "Activity Paused");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("DestroyTest", "Activity Resumed");
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.d("DestroyTest", "Activity Restarted");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d("DestroyTest", "Activity Stopped");
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d("DestroyTest", "Activity Started");
+    }
 
     public void putRequestWithHeaderAndBody() throws IOException {
 
@@ -181,7 +218,102 @@ public class MainActivity extends IntegrationActivity {
     }
 
 
+     public void newCorrectionFFD12() {
 
+        Date correctableSettlementDate = Calendar.getInstance().getTime(); //Дата коррекции
+        List<Position> positions = new ArrayList<>(); //Список позиций
+        HashMap payments = new HashMap<Payment, BigDecimal>(); //Список оплат
+        ArrayList<Receipt.PrintReceipt> listDocs = new ArrayList<>(); //Список печатных документов
+
+         //Добавляем позиции в список
+         positions.add(
+                    Position.Builder.newInstance(
+                            //UUID позиции
+                            UUID.randomUUID().toString(),
+                            //UUID товара
+                            UUID.randomUUID().toString(),
+                            //Наименование
+                            UUID.randomUUID().toString(),
+                            //Наименование единицы измерения
+                            new Measure("шт", 0, 0),
+                            //Цена без скидок
+                            new BigDecimal(1000),
+                            //Количество
+                            new BigDecimal(1)
+                    )
+                            //.setPriceWithDiscountPosition()
+                            .build()
+         );
+
+         //Создаем оплату
+         Payment payment1 = new Payment(
+                 UUID.randomUUID().toString(),
+                 new BigDecimal(1000),
+                 null,
+                 new PaymentPerformer(
+                         new PaymentSystem(PaymentType.ELECTRON, "Оплата по безналу", UUID.randomUUID().toString()),
+                         null,
+                         null,
+                         null,
+                         null
+                 ),
+                 null,
+                 null,
+                 null
+         );
+         //Добавляем оплату в список
+         payments.put(payment1, new BigDecimal(1000));
+
+         //Создаем печатную группу
+         PrintGroup printGroup = new PrintGroup(UUID.randomUUID().toString(),
+                 PrintGroup.Type.CASH_RECEIPT, null, null, null,
+                 null, true, null, null);
+
+         //Создаем документ к печати
+         Receipt.PrintReceipt printReceipt = new Receipt.PrintReceipt(
+                 printGroup,
+                 positions,
+                 payments,
+                 new HashMap<Payment, BigDecimal>(),
+                 new HashMap<String, BigDecimal>()
+         );
+         //Добавляем документ в список
+         listDocs.add(printReceipt);
+
+         //Выполняем команду для печати
+         new PrintCorrectionIncomeReceiptCommand(
+                 listDocs,
+                 null,
+                 null,
+                 null,
+                 null,
+                 null,
+                 null,
+                 null,
+                 correctableSettlementDate,
+                 CorrectionType.BY_SELF,
+                 "тест коррекции"
+                 ).process(MainActivity.this, new IntegrationManagerCallback() {
+             @Override
+             public void run(IntegrationManagerFuture future) {
+                 try {
+                     IntegrationManagerFuture.Result result = future.getResult();
+                     switch (result.getType()) {
+                         case OK:
+                             PrintReceiptCommandResult printCorrectionIncomeReceiptResult = PrintReceiptCommandResult.create(result.getData());
+                             break;
+                         case ERROR:
+                             Toast.makeText(MainActivity.this, result.getError().getMessage(), Toast.LENGTH_LONG).show();
+                             Error error = result.getError();
+                             Log.i(getPackageName(), "e.code: " + error.getCode() + "; e.msg: " + error.getMessage());
+                             break;
+                     }
+                 } catch (IntegrationException e) {
+                     e.printStackTrace();
+                 }
+             }
+         });
+     }
 
 
     public void Correction() {
@@ -225,10 +357,11 @@ public class MainActivity extends IntegrationActivity {
         //Создание списка товаров чека
         List<Position> list = new ArrayList<>();
 
+        String principalInn = "070704218872";
         List<String> phones = new ArrayList<>();
         phones.add("89631654555");
 
-        for (int i = 1; i < 2; i++) {
+       // for (int i = 1; i < 2; i++) {
             //позиция 1
             list.add(
                     Position.Builder.newInstance(
@@ -237,35 +370,25 @@ public class MainActivity extends IntegrationActivity {
                             //UUID товара
                             UUID.randomUUID().toString(),
                             //Наименование
-                            UUID.randomUUID().toString(),
+                            "Товар в кредит",
                             //Наименование единицы измерения
-                            "шт",
-                            //Точность единицы измерения
-                            0,
+                            new Measure("шт", 0, 0),
                             //Цена без скидок
                             new BigDecimal(1000),
                             //Количество
                             new BigDecimal(1)
                     )
-
-                            // .setAgentRequisites(AgentRequisites.createForAgent("070704218872", phones))
-
-
-                            //.setProductCode("2354ASV455")
-                            //.setSettlementMethod(new SettlementMethod.PartialPrepayment())
-                            .setTaxNumber(TaxNumber.NO_VAT)
-                            //.setExtraKeys(set) //Установка Extra-информации. Данные будут напечатаны на чеке
-                            //Установка цены с учетом скидки:
-                            //.setPriceWithDiscountPosition(new BigDecimal(500))
+                            .setSettlementMethod(new SettlementMethod.Lend())
+                            //.setAgentRequisites(AgentRequisites.createForAgent(principalInn, phones))
                             .build()
             );
-        }
+        //}
         HashMap payments = new HashMap<Payment, BigDecimal>();
         //установка способа оплаты
         //1
         Payment payment1 = new Payment(
                 UUID.randomUUID().toString(),
-                new BigDecimal(1000),
+                new BigDecimal(1000.112233),
                 null,
                 new PaymentPerformer(
                         new PaymentSystem(PaymentType.ELECTRON, "Оплата по безналу", "com.rein.android.ReynTestApp"),
@@ -278,7 +401,7 @@ public class MainActivity extends IntegrationActivity {
                 null,
                 null
         );
-        payments.put(payment1, new BigDecimal(1000));
+        payments.put(payment1, new BigDecimal(1000.112233));
 
 
         Purchaser firstLegalEntity = new Purchaser(
@@ -356,11 +479,9 @@ public class MainActivity extends IntegrationActivity {
                                 //UUID товара
                                 UUID.randomUUID().toString(),
                                 //Наименование
-                                "Тестовый товар",
+                                "Товар в кредит",
                                 //Наименование единицы измерения
-                                "шт",
-                                //Точность единицы измерения
-                                0,
+                                new Measure("шт", 0, 0),
                                 //Цена без скидок
                                 new BigDecimal(30000),
                                 //Количество
@@ -369,7 +490,7 @@ public class MainActivity extends IntegrationActivity {
                         )
                                 //.toService()
 
-                                //.setSettlementMethod(new SettlementMethod.AdvancePayment())
+                                .setSettlementMethod(new SettlementMethod.Lend())
                                 //.setExtraKeys(set) //Extras
                                 //.setAgentRequisites(AgentRequisites.createForAgent("070704218872", Collections.singletonList("79776030448")))
                                 //Добавление цены с учетом скидки на позицию. Итог = price - priceWithDiscountPosition
@@ -398,16 +519,12 @@ public class MainActivity extends IntegrationActivity {
                     IntegrationManagerFuture.Result result = future.getResult();
                     if (result.getType() == IntegrationManagerFuture.Result.Type.OK) {
 
-                                        String Receipt_uuid = ReceiptApi.getReceipt(MainActivity.this, Receipt.Type.SELL).getHeader().getUuid();
-                                        Toast.makeText(MainActivity.this, Receipt_uuid, Toast.LENGTH_LONG).show();
-
-
-                       startActivity(NavigationApi.createIntentForSellReceiptPayment());
+                       //startActivity(new Intent("evotor.intent.action.payment.SELL"));
 
 
                 ////////////////////SellAPI////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-                        /*final List<PaymentPerformer> paymentPerformers123 = PaymentPerformerApi.INSTANCE.getAllPaymentPerformers(getPackageManager());
+                        final List<PaymentPerformer> paymentPerformers123 = PaymentPerformerApi.INSTANCE.getAllPaymentPerformers(getPackageManager());
                         AlertDialog.Builder builderSingle = new AlertDialog.Builder(MainActivity.this);
 
                         final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.select_dialog_singlechoice);
@@ -415,11 +532,34 @@ public class MainActivity extends IntegrationActivity {
                             arrayAdapter.add(paymentPerformers123.get(i).getPaymentSystem().getUserDescription());
                         }
 
+                        PaymentPerformer creditPaymentPerformer = new PaymentPerformer(
+                                new PaymentSystem(
+                                        PaymentType.CREDIT,
+                                        "Кредит",
+                                        "ru.evotor.paymentSystem.credit.base"
+                                ),
+                                null,
+                                null,
+                                null,
+                                "Кредит"
+                        );
+                        SellApi.moveCurrentReceiptDraftToPaymentStage(MainActivity.this, creditPaymentPerformer, new ReceiptFormationCallback() {
+                            @Override
+                            public void onSuccess() {
+                                Toast.makeText(MainActivity.this, "Передаем чек на оплату", Toast.LENGTH_LONG).show();
+                            }
+
+                            @Override
+                            public void onError(ReceiptFormationException e) {
+                                Toast.makeText(MainActivity.this, e.getCode() + " " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        });
+
                         builderSingle.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
                             @Override
                             //По выбору пользователя выполняем оплату и печатаем чек.
                             public void onClick(DialogInterface dialog, int which) {
-                                SellApi.moveCurrentReceiptDraftToPaymentStage(MainActivity.this, paymentPerformers123.get(which), new ReceiptFormationCallback() {
+                                SellApi.moveCurrentReceiptDraftToPaymentStage(MainActivity.this, creditPaymentPerformer, new ReceiptFormationCallback() {
                                     @Override
                                     public void onSuccess() {
                                         Toast.makeText(MainActivity.this, "Передаем чек на оплату", Toast.LENGTH_LONG).show();
@@ -432,7 +572,7 @@ public class MainActivity extends IntegrationActivity {
                                 });
                             }
                         });
-                        builderSingle.show();*/
+                        //builderSingle.show();
 
                 //////////////////////////SellAPI////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
