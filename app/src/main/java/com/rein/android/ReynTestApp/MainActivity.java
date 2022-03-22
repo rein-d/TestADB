@@ -5,6 +5,7 @@ import static ru.evotor.framework.kkt.api.KktApi.receiveKktSerialNumber;
 import static ru.evotor.framework.receipt.TaxationSystem.COMMON;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -83,6 +84,7 @@ import ru.evotor.framework.receipt.Receipt;
 import ru.evotor.framework.receipt.ReceiptApi;
 import ru.evotor.framework.receipt.SettlementType;
 import ru.evotor.framework.receipt.TaxNumber;
+import ru.evotor.framework.receipt.TaxationSystem;
 import ru.evotor.framework.receipt.correction.CorrectionType;
 import ru.evotor.framework.receipt.formation.api.ReceiptFormationCallback;
 import ru.evotor.framework.receipt.formation.api.ReceiptFormationException;
@@ -117,9 +119,21 @@ public class MainActivity extends IntegrationAppCompatActivity {
 
 
         });
+
         findViewById(R.id.WebViewButton).setOnClickListener(view -> {
 
-            throw new RuntimeException("Test Crash"); // Force a crash
+            List<TaxationSystem> taxSystems = getFsDoc(this);
+
+            String firstTaxSystem = String.valueOf(taxSystems.get(0));
+
+            if (taxSystems.isEmpty()) {
+                Log.d("fsAPI", "Empty!!");
+                Toast.makeText(this, "Empty!!", Toast.LENGTH_SHORT).show();
+            } else {
+                Log.d("fsAPI", String.valueOf(taxSystems.get(0)));
+                Toast.makeText(this, firstTaxSystem, Toast.LENGTH_SHORT).show();
+            }
+        //throw new RuntimeException("Test Crash"); // Force a crash
 
         });
 
@@ -202,6 +216,11 @@ public class MainActivity extends IntegrationAppCompatActivity {
         Log.d("DestroyTest", "Activity Started");
     }
 
+    public List<TaxationSystem> getFsDoc(Context context) {
+        FsApi.GetFsFiscalizationDocumentResult.Success fsDoc = (FsApi.GetFsFiscalizationDocumentResult.Success) FsApi.getLastFsFiscalizationDocument(context);
+        return fsDoc.getDocument().getTaxationSystemsList();
+    };
+
     public void putRequestWithHeaderAndBody() throws IOException {
 
         OkHttpClient client = new OkHttpClient();
@@ -251,7 +270,7 @@ public class MainActivity extends IntegrationAppCompatActivity {
                  new BigDecimal(1000),
                  null,
                  new PaymentPerformer(
-                         new PaymentSystem(PaymentType.ELECTRON, "Оплата по безналу", UUID.randomUUID().toString()),
+                         new PaymentSystem(PaymentType.ELECTRON, "", UUID.randomUUID().toString()),
                          null,
                          null,
                          null,
@@ -378,9 +397,11 @@ public class MainActivity extends IntegrationAppCompatActivity {
                             //Количество
                             new BigDecimal(1)
                     )
-                            .setSettlementMethod(new SettlementMethod.Lend())
+                            //.setSettlementMethod(new SettlementMethod.Lend())
                             //.setAgentRequisites(AgentRequisites.createForAgent(principalInn, phones))
+                            //.setMark("1234983784289efuiafa930a940939jfe")
                             .build()
+
             );
         //}
         HashMap payments = new HashMap<Payment, BigDecimal>();
@@ -388,10 +409,10 @@ public class MainActivity extends IntegrationAppCompatActivity {
         //1
         Payment payment1 = new Payment(
                 UUID.randomUUID().toString(),
-                new BigDecimal(1000.112233),
+                new BigDecimal(1000),
                 null,
                 new PaymentPerformer(
-                        new PaymentSystem(PaymentType.ELECTRON, "Оплата по безналу", "com.rein.android.ReynTestApp"),
+                        new PaymentSystem(PaymentType.ELECTRON, "", ""),
                         null,
                         null,
                         null,
@@ -401,7 +422,7 @@ public class MainActivity extends IntegrationAppCompatActivity {
                 null,
                 null
         );
-        payments.put(payment1, new BigDecimal(1000.112233));
+        payments.put(payment1, new BigDecimal(1000));
 
 
         Purchaser firstLegalEntity = new Purchaser(
@@ -414,7 +435,7 @@ public class MainActivity extends IntegrationAppCompatActivity {
 
         PrintGroup printGroup = new PrintGroup(UUID.randomUUID().toString(),
                 PrintGroup.Type.CASH_RECEIPT, null, null, null,
-                null, true, null, null);
+                null, false, null, null);
         Receipt.PrintReceipt printReceipt = new Receipt.PrintReceipt(
                 printGroup,
                 list,

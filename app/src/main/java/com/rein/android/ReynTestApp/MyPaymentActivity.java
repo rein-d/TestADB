@@ -40,7 +40,7 @@ public class MyPaymentActivity extends IntegrationActivity {
         final String strUuidOperation = rrn.toString();
         slip.add(strUuidOperation);
         slip.add("SLIP END");
-        setIntegrationResult(new PaymentSystemPaymentOkResult(rrn.toString(), slip, "Сумма платежа", PaymentType.ELECTRON));
+        setIntegrationResult(new PaymentSystemPaymentOkResult(rrn.toString(), slip, "", PaymentType.ELECTRON));
         finish();
 
         //В случае успешной обработки события служба должна возвращать результат PaymentSystemPaymentOkResult

@@ -34,7 +34,7 @@
         android:id="@+id/WebViewButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Получить версию ФФД"
+        android:text="Получить СНО"
         android:textAlignment="center" />
 
     <Button
