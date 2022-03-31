@@ -8,4 +8,16 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="ButtonsStyle">
+        <item name="android:textColor">@color/colorMain</item>
+        <item name="android:background">@color/colorButtonBackround</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <style name="LayoutsStyle">
+        <item name="android:background">@color/colorMain</item>
+    </style>
+
 </resources>

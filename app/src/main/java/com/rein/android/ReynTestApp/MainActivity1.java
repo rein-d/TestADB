@@ -7,21 +7,14 @@ import static ru.evotor.framework.receipt.TaxationSystem.COMMON;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
-
-import androidx.fragment.app.FragmentManager;
-import androidx.viewpager.widget.ViewPager;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.security.SecureRandom;
@@ -35,27 +28,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import ru.evotor.framework.component.PaymentPerformer;
 import ru.evotor.framework.component.PaymentPerformerApi;
-import ru.evotor.framework.component.viewdata.IntegrationComponentViewDataApi;
 import ru.evotor.framework.core.Error;
-import ru.evotor.framework.core.IntegrationActivity;
 import ru.evotor.framework.core.IntegrationAppCompatActivity;
 import ru.evotor.framework.core.IntegrationException;
 import ru.evotor.framework.core.IntegrationManagerCallback;
 import ru.evotor.framework.core.IntegrationManagerFuture;
-import ru.evotor.framework.core.action.command.open_receipt_command.OpenPaybackReceiptCommand;
 import ru.evotor.framework.core.action.command.open_receipt_command.OpenSellReceiptCommand;
 import ru.evotor.framework.core.action.command.print_receipt_command.PrintCorrectionIncomeReceiptCommand;
 import ru.evotor.framework.core.action.command.print_receipt_command.PrintReceiptCommandResult;
@@ -64,13 +49,10 @@ import ru.evotor.framework.core.action.command.print_z_report_command.PrintZRepo
 import ru.evotor.framework.core.action.command.print_z_report_command.PrintZReportCommandResult;
 import ru.evotor.framework.core.action.event.receipt.changes.position.PositionAdd;
 import ru.evotor.framework.core.action.event.receipt.changes.position.SetExtra;
-import ru.evotor.framework.fs.FsFiscalizationDocument;
 import ru.evotor.framework.fs.api.FsApi;
-import ru.evotor.framework.kkt.FfdVersion;
 import ru.evotor.framework.kkt.api.DocumentRegistrationCallback;
 import ru.evotor.framework.kkt.api.DocumentRegistrationException;
 import ru.evotor.framework.kkt.api.KktApi;
-import ru.evotor.framework.navigation.NavigationApi;
 import ru.evotor.framework.payment.PaymentSystem;
 import ru.evotor.framework.payment.PaymentType;
 import ru.evotor.framework.receipt.ExtraKey;
@@ -81,20 +63,17 @@ import ru.evotor.framework.receipt.PrintGroup;
 import ru.evotor.framework.receipt.Purchaser;
 import ru.evotor.framework.receipt.PurchaserType;
 import ru.evotor.framework.receipt.Receipt;
-import ru.evotor.framework.receipt.ReceiptApi;
 import ru.evotor.framework.receipt.SettlementType;
-import ru.evotor.framework.receipt.TaxNumber;
 import ru.evotor.framework.receipt.TaxationSystem;
 import ru.evotor.framework.receipt.correction.CorrectionType;
 import ru.evotor.framework.receipt.formation.api.ReceiptFormationCallback;
 import ru.evotor.framework.receipt.formation.api.ReceiptFormationException;
 import ru.evotor.framework.receipt.formation.api.SellApi;
-import ru.evotor.framework.receipt.position.AgentRequisites;
 import ru.evotor.framework.receipt.position.SettlementMethod;
 import ru.evotor.framework.receipt.position.VatRate;
 
 
-public class MainActivity extends IntegrationAppCompatActivity {
+public class MainActivity1 extends IntegrationAppCompatActivity {
     public static final String TAG = "MyApp";
 
 
@@ -104,11 +83,10 @@ public class MainActivity extends IntegrationAppCompatActivity {
         setContentView(R.layout.activity_main);
         Log.d("DestroyTest", "Activity Created");
 
-        findViewById(R.id.PrintSellReceiptButton).setOnClickListener(view -> {
+       /* findViewById(R.id.PrintSellReceiptButton).setOnClickListener(view -> {
            // m_Activity.startActivityForResult(NavigationApi.createIntentForSellReceiptEdit(true),0);
             openReceiptAndEmail();
         });
-
         findViewById(R.id.CorrectionButton).setOnClickListener(view -> newCorrectionFFD12());
 
         findViewById(R.id.OpenSellReceiptButton).setOnClickListener(view -> {
@@ -121,20 +99,16 @@ public class MainActivity extends IntegrationAppCompatActivity {
         });
 
         findViewById(R.id.WebViewButton).setOnClickListener(view -> {
-
-            List<TaxationSystem> taxSystems = getFsDoc(this);
-
-            String firstTaxSystem = String.valueOf(taxSystems.get(0));
+            List<TaxationSystem> taxSystems = getFsTaxSystems(this);
 
             if (taxSystems.isEmpty()) {
                 Log.d("fsAPI", "Empty!!");
                 Toast.makeText(this, "Empty!!", Toast.LENGTH_SHORT).show();
             } else {
                 Log.d("fsAPI", String.valueOf(taxSystems.get(0)));
-                Toast.makeText(this, firstTaxSystem, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, String.valueOf(taxSystems.get(0)), Toast.LENGTH_SHORT).show();
             }
         //throw new RuntimeException("Test Crash"); // Force a crash
-
         });
 
         findViewById(R.id.HttpRequestButton).setOnClickListener(view -> {
@@ -154,7 +128,8 @@ public class MainActivity extends IntegrationAppCompatActivity {
             };
             thread.start();
         });
-        findViewById(R.id.CloseSessionButton).setOnClickListener(view -> new PrintZReportCommand().process(MainActivity.this, new IntegrationManagerCallback() {
+        findViewById(R.id.CloseSessionButton).setOnClickListener(view -> new PrintZReportCommand()
+                .process(this, new IntegrationManagerCallback() {
             @Override
             public void run(IntegrationManagerFuture future) {
                 try {
@@ -164,7 +139,7 @@ public class MainActivity extends IntegrationAppCompatActivity {
                             PrintZReportCommandResult printSellReceiptResult = PrintZReportCommandResult.create(result.getData());
                             break;
                         case ERROR:
-                            Toast.makeText(MainActivity.this, result.getError().getMessage(), Toast.LENGTH_LONG).show();
+                            Toast.makeText(MainActivity1.this, result.getError().getMessage(), Toast.LENGTH_LONG).show();
                             Error error = result.getError();
                             Log.i(getPackageName(), "e.code: " + error.getCode() + "; e.msg: " + error.getMessage());
                             //alertMainValue(error.getMessage());
@@ -216,9 +191,15 @@ public class MainActivity extends IntegrationAppCompatActivity {
         Log.d("DestroyTest", "Activity Started");
     }
 
-    public List<TaxationSystem> getFsDoc(Context context) {
-        FsApi.GetFsFiscalizationDocumentResult.Success fsDoc = (FsApi.GetFsFiscalizationDocumentResult.Success) FsApi.getLastFsFiscalizationDocument(context);
-        return fsDoc.getDocument().getTaxationSystemsList();
+    public List<TaxationSystem> getFsTaxSystems(Context context) {
+        FsApi.GetFsFiscalizationDocumentResult.Success fsDoc =
+                (FsApi.GetFsFiscalizationDocumentResult.Success) FsApi.getLastFsFiscalizationDocument(context);
+
+        List<TaxationSystem> taxSysList = new ArrayList<>();
+        if (fsDoc.getDocument() != null) {
+            taxSysList = fsDoc.getDocument().getTaxationSystemsList();
+        };
+        return taxSysList;
     };
 
     public void putRequestWithHeaderAndBody() throws IOException {
@@ -312,7 +293,7 @@ public class MainActivity extends IntegrationAppCompatActivity {
                  correctableSettlementDate,
                  CorrectionType.BY_SELF,
                  "тест коррекции"
-                 ).process(MainActivity.this, new IntegrationManagerCallback() {
+                 ).process(MainActivity1.this, new IntegrationManagerCallback() {
              @Override
              public void run(IntegrationManagerFuture future) {
                  try {
@@ -322,7 +303,7 @@ public class MainActivity extends IntegrationAppCompatActivity {
                              PrintReceiptCommandResult printCorrectionIncomeReceiptResult = PrintReceiptCommandResult.create(result.getData());
                              break;
                          case ERROR:
-                             Toast.makeText(MainActivity.this, result.getError().getMessage(), Toast.LENGTH_LONG).show();
+                             Toast.makeText(MainActivity1.this, result.getError().getMessage(), Toast.LENGTH_LONG).show();
                              Error error = result.getError();
                              Log.i(getPackageName(), "e.code: " + error.getCode() + "; e.msg: " + error.getMessage());
                              break;
@@ -457,7 +438,7 @@ public class MainActivity extends IntegrationAppCompatActivity {
                 null,
                 null,
                 null
-        ).process(MainActivity.this, new IntegrationManagerCallback() {
+        ).process(MainActivity1.this, new IntegrationManagerCallback() {
             @Override
             public void run(IntegrationManagerFuture future) {
                 try {
@@ -468,7 +449,7 @@ public class MainActivity extends IntegrationAppCompatActivity {
                             Log.d("ReynLogs", "payment id: "+payment1.getUuid().toString());
                             break;
                         case ERROR:
-                            Toast.makeText(MainActivity.this, result.getError().getMessage(), Toast.LENGTH_LONG).show();
+                            Toast.makeText(MainActivity1.this, result.getError().getMessage(), Toast.LENGTH_LONG).show();
                             Error error = result.getError();
                             Log.i(getPackageName(), "e.code: " + error.getCode() + "; e.msg: " + error.getMessage());
                             //alertMainValue(error.getMessage());
@@ -546,9 +527,9 @@ public class MainActivity extends IntegrationAppCompatActivity {
                 ////////////////////SellAPI////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                         final List<PaymentPerformer> paymentPerformers123 = PaymentPerformerApi.INSTANCE.getAllPaymentPerformers(getPackageManager());
-                        AlertDialog.Builder builderSingle = new AlertDialog.Builder(MainActivity.this);
+                        AlertDialog.Builder builderSingle = new AlertDialog.Builder(MainActivity1.this);
 
-                        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.select_dialog_singlechoice);
+                        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(MainActivity1.this, android.R.layout.select_dialog_singlechoice);
                         for (int i = 0; i < paymentPerformers123.size(); i++) {
                             arrayAdapter.add(paymentPerformers123.get(i).getPaymentSystem().getUserDescription());
                         }
@@ -564,15 +545,15 @@ public class MainActivity extends IntegrationAppCompatActivity {
                                 null,
                                 "Кредит"
                         );
-                        SellApi.moveCurrentReceiptDraftToPaymentStage(MainActivity.this, creditPaymentPerformer, new ReceiptFormationCallback() {
+                        SellApi.moveCurrentReceiptDraftToPaymentStage(MainActivity1.this, creditPaymentPerformer, new ReceiptFormationCallback() {
                             @Override
                             public void onSuccess() {
-                                Toast.makeText(MainActivity.this, "Передаем чек на оплату", Toast.LENGTH_LONG).show();
+                                Toast.makeText(MainActivity1.this, "Передаем чек на оплату", Toast.LENGTH_LONG).show();
                             }
 
                             @Override
                             public void onError(ReceiptFormationException e) {
-                                Toast.makeText(MainActivity.this, e.getCode() + " " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                Toast.makeText(MainActivity1.this, e.getCode() + " " + e.getMessage(), Toast.LENGTH_LONG).show();
                             }
                         });
 
@@ -580,15 +561,15 @@ public class MainActivity extends IntegrationAppCompatActivity {
                             @Override
                             //По выбору пользователя выполняем оплату и печатаем чек.
                             public void onClick(DialogInterface dialog, int which) {
-                                SellApi.moveCurrentReceiptDraftToPaymentStage(MainActivity.this, creditPaymentPerformer, new ReceiptFormationCallback() {
+                                SellApi.moveCurrentReceiptDraftToPaymentStage(MainActivity1.this, creditPaymentPerformer, new ReceiptFormationCallback() {
                                     @Override
                                     public void onSuccess() {
-                                        Toast.makeText(MainActivity.this, "Передаем чек на оплату", Toast.LENGTH_LONG).show();
+                                        Toast.makeText(MainActivity1.this, "Передаем чек на оплату", Toast.LENGTH_LONG).show();
                                     }
 
                                     @Override
                                     public void onError(ReceiptFormationException e) {
-                                        Toast.makeText(MainActivity.this, e.getCode() + " " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                        Toast.makeText(MainActivity1.this, e.getCode() + " " + e.getMessage(), Toast.LENGTH_LONG).show();
                                     }
                                 });
                             }
@@ -638,7 +619,7 @@ public class MainActivity extends IntegrationAppCompatActivity {
         }
     }
 
-   /* @Override
+   *//* @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         View mDecorView = getWindow().getDecorView();
@@ -651,4 +632,4 @@ public class MainActivity extends IntegrationAppCompatActivity {
                     | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
         }
     }*/
-}
+}}

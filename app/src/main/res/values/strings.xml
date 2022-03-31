@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">TestADB</string>
-    <string name="offertaText">TestADB</string>
+    <string name="mainTitle">My Test Application</string>
+    <string name="correctionButton">make correction receipt</string>
+    <string name="openSellReceiptButton">open sell receipt</string>
 </resources>

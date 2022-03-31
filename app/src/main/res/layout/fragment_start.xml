@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/startFragment"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="cursive"
+        android:text="@string/mainTitle"
+        android:textColor="@color/colorButtonBackround"
+        android:textSize="50sp" />
+
+    <Button
+        android:id="@+id/correctionButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/correctionButton"
+        android:layout_marginTop="16dp"/>
+
+    <Button
+        android:id="@+id/closeSessionButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/openSellReceiptButton"
+        android:layout_marginTop="16dp"/>
+
+
+</LinearLayout>

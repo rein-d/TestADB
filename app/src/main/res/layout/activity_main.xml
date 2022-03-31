@@ -1,53 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:theme="@style/Theme.AppCompat"
-    tools:context=".MainActivity">
+    android:layout_height="match_parent">
 
 
-    <Button
-        android:id="@+id/OpenSellReceiptButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="OpenSellReceipt"
-        android:textAlignment="center" />
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragmentContainer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
-    <Button
-        android:id="@+id/CorrectionButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Коррекция"
-        android:textAlignment="center" />
 
-    <Button
-        android:id="@+id/HttpRequestButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Send HTTP Request"
-        android:textAlignment="center" />
-
-    <Button
-        android:id="@+id/WebViewButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Получить СНО"
-        android:textAlignment="center" />
-
-    <Button
-        android:id="@+id/PrintSellReceiptButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="PrintSellReceipt"
-        android:textAlignment="center" />
-
-    <Button
-        android:id="@+id/CloseSessionButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Закрыть смену" />
-
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
