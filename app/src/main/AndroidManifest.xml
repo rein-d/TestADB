@@ -14,6 +14,8 @@
     <uses-permission android:name="ru.evotor.permission.BUY_INTEGRATION_SERVICE" /> <!-- Разрешение на использование службы для работы с чеком возврата покупки -->
     <uses-permission android:name="ru.evotor.permission.BUYBACK_INTEGRATION_SERVICE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="ru.evotor.pushnotifications.PUSH_RECEIVE" />
+
 
     <application
         android:allowBackup="true"
@@ -129,7 +131,7 @@
 
         <receiver
             android:name=".PushReceiver"
-            android:enabled="false"
+            android:enabled="true"
             android:permission="ru.evotor.pushnotifications.PUSH_SENDER">
             <intent-filter>
                 <action android:name="ru.evotor.pushnotifications.PUSH_RECEIVED_EVENT" />

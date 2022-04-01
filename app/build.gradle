@@ -3,14 +3,14 @@ apply plugin: 'com.google.gms.google-services'
 apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 29
     buildToolsVersion "30.0.2"
     defaultConfig {
         applicationId "com.rein.android.ReynTestApp"
         minSdkVersion 23
-        //noinspection OldTargetApi
-        targetSdkVersion 30
-        versionCode 153
+        //noinspection ExpiredTargetSdkVersion,OldTargetApi
+        targetSdkVersion 29
+        versionCode 162
         versionName "5.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

@@ -11,7 +11,7 @@ public class PushReceiver extends PushNotificationReceiver {
     @Override
     public void onReceivePushNotification(final Context context, Bundle data, long messageId) {
         //...получение push-уведомления.
-        Toast.makeText(context, data.getString("header") + " " + data.getString("description")
+        Toast.makeText(context, data.getString("1111") + " " + data.getString("qqqq")
                 + " " + messageId, Toast.LENGTH_SHORT).show();
     }
 }

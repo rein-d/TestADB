@@ -43,9 +43,6 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import ru.evotor.framework.component.PaymentPerformer;
 import ru.evotor.framework.component.PaymentPerformerApi;
 import ru.evotor.framework.component.viewdata.IntegrationComponentViewDataApi;
@@ -137,23 +134,6 @@ public class MainActivity extends IntegrationAppCompatActivity {
 
         });
 
-        findViewById(R.id.HttpRequestButton).setOnClickListener(view -> {
-
-            trustAllCertificates();
-
-            Thread thread = new Thread() {
-                @Override
-                public void run() {
-                    try {
-                        putRequestWithHeaderAndBody();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-
-                    }
-                }
-            };
-            thread.start();
-        });
         findViewById(R.id.CloseSessionButton).setOnClickListener(view -> new PrintZReportCommand().process(MainActivity.this, new IntegrationManagerCallback() {
             @Override
             public void run(IntegrationManagerFuture future) {
@@ -221,20 +201,6 @@ public class MainActivity extends IntegrationAppCompatActivity {
         return fsDoc.getDocument().getTaxationSystemsList();
     };
 
-    public void putRequestWithHeaderAndBody() throws IOException {
-
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder()
-                .url("https://webhook.site/1828d94a-2542-41cf-8b1f-6d4db351c3f9")
-                .build();
-
-        Response response = client.newCall(request).execute();
-
-        if (!response.isSuccessful()) {
-            throw new IOException("Unexpected response code: " + response);
-        }
-        Toast.makeText(this, response.body().toString(), Toast.LENGTH_LONG);
-    }
 
 
      public void newCorrectionFFD12() {
