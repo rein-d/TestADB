@@ -13,7 +13,7 @@
     <uses-permission android:name="ru.evotor.permission.PAYBACK_INTEGRATION_SERVICE" /> <!-- Разрешение на использование службы для работы с чеком покупки -->
     <uses-permission android:name="ru.evotor.permission.BUY_INTEGRATION_SERVICE" /> <!-- Разрешение на использование службы для работы с чеком возврата покупки -->
     <uses-permission android:name="ru.evotor.permission.BUYBACK_INTEGRATION_SERVICE" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="ru.evotor.permission.SET_PURCHASER_CONTACT_DATA" />
 
     <application
         android:allowBackup="true"
@@ -67,6 +67,9 @@
             <meta-data
                 android:name="ru.evotor.paymentSystem.PAYMENT_SYSTEM_ID"
                 android:value="com.rein.android.ReynTestApp" />
+            <meta-data
+                  android:name="ru.evotor.paymentSystem.ui.SELL"
+                  android:value="true" />
 
             <intent-filter>
                 <action android:name="evo.v2.receipt.paymentSystem" />
@@ -148,10 +151,9 @@
         </service>
         <service
             android:name=".MyPrintService"
-            android:enabled="false"
+            android:enabled="true"
             android:exported="true">
             <intent-filter>
-
                 <!-- Печать произвольных данных в чеке продажи -->
                 <action android:name="evo.v2.receipt.sell.printExtra.REQUIRED" />
                 <!-- Печать произвольных данных в чеке возврата -->

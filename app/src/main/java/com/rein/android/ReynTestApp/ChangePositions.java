@@ -48,7 +48,7 @@ public class ChangePositions extends IntegrationService {
 
 
                 try {
-                    callback.onResult(new BeforePositionsEditedEventResult(changes, null));
+                    callback.onResult(new BeforePositionsEditedEventResult(changes, null, null));
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }

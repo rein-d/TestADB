@@ -16,12 +16,9 @@ package com.rein.android.ReynTestApp;
         import java.util.HashMap;
         import java.util.List;
         import java.util.Map;
-
-        import ru.evotor.framework.component.viewdata.IntegrationComponentViewDataApi;
-        import ru.evotor.framework.core.IntegrationAppCompatActivity;
         import ru.evotor.framework.core.IntegrationService;
         import ru.evotor.framework.core.action.event.receipt.changes.position.IPositionChange;
-        import ru.evotor.framework.core.action.event.receipt.changes.position.SetExtra;
+        import ru.evotor.framework.core.action.event.receipt.changes.receipt.SetExtra;
         import ru.evotor.framework.core.action.event.receipt.discount.ReceiptDiscountEvent;
         import ru.evotor.framework.core.action.event.receipt.discount.ReceiptDiscountEventProcessor;
         import ru.evotor.framework.core.action.event.receipt.discount.ReceiptDiscountEventResult;
@@ -51,7 +48,8 @@ public class MyDiscountService extends IntegrationService {
                             new ReceiptDiscountEventResult(
                                     discount,
                                     extra,
-                                    listOfChanges
+                                    listOfChanges,
+                                    null
                             ));
                 } catch (JSONException | RemoteException e) {
                     e.printStackTrace();

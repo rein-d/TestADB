@@ -8,6 +8,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,6 +24,7 @@ import ru.evotor.framework.core.action.processor.ActionProcessor;
 public class MyPaymentService extends IntegrationService {
     public static final String TAG = "PaymentService";
     public static final String EXTRA_NAME_OPERATION = "EXTRA_NAME_OPERATION";
+    public static final String SUM = "ReceiptSum";
 
     @Nullable
     @Override
@@ -37,6 +39,7 @@ public class MyPaymentService extends IntegrationService {
                         Log.e(TAG, "sell " + paymentSystemSellEvent);
                         //Передадим тип операции с  в Activity
                         Intent intent = new Intent(MyPaymentService.this, MyPaymentActivity.class);
+                        intent.putExtra(SUM, paymentSystemSellEvent.getSum().movePointRight(2).intValue());
                         intent.putExtra(EXTRA_NAME_OPERATION, "sell");
                         try {
                             callback.startActivity(intent);

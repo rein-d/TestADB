@@ -6,7 +6,8 @@ import ru.evotor.framework.calculator.MoneyCalculator
 import ru.evotor.framework.component.PaymentPerformer
 import ru.evotor.framework.component.PaymentPerformerApi
 import ru.evotor.framework.core.IntegrationActivity
-import ru.evotor.framework.core.action.event.receipt.changes.position.SetExtra
+import ru.evotor.framework.core.action.event.receipt.changes.receipt.SetExtra
+
 import ru.evotor.framework.core.action.event.receipt.payment.combined.result.PaymentDelegatorCanceledAllEventResult
 import ru.evotor.framework.core.action.event.receipt.payment.combined.result.PaymentDelegatorSelectedEventResult
 import ru.evotor.framework.payment.PaymentPurpose

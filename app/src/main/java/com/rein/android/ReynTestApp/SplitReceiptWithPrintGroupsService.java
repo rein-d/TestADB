@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 import ru.evotor.framework.core.IntegrationService;
-import ru.evotor.framework.core.action.event.receipt.changes.position.SetExtra;
 import ru.evotor.framework.core.action.event.receipt.changes.position.SetPrintGroup;
+import ru.evotor.framework.core.action.event.receipt.changes.receipt.SetExtra;
 import ru.evotor.framework.core.action.event.receipt.print_group.PrintGroupRequiredEvent;
 import ru.evotor.framework.core.action.event.receipt.print_group.PrintGroupRequiredEventProcessor;
 import ru.evotor.framework.core.action.event.receipt.print_group.PrintGroupRequiredEventResult;
@@ -23,7 +23,6 @@ import ru.evotor.framework.core.action.processor.ActionProcessor;
 import ru.evotor.framework.receipt.PrintGroup;
 import ru.evotor.framework.receipt.Purchaser;
 import ru.evotor.framework.receipt.PurchaserType;
-import ru.evotor.framework.receipt.TaxationSystem;
 
 public class SplitReceiptWithPrintGroupsService extends IntegrationService {
     @Nullable

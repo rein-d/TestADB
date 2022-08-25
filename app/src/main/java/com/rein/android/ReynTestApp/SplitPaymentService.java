@@ -15,7 +15,6 @@ import java.util.Map;
 
 import ru.evotor.framework.component.PaymentPerformer;
 import ru.evotor.framework.core.IntegrationService;
-import ru.evotor.framework.core.action.event.receipt.changes.position.SetExtra;
 import ru.evotor.framework.core.action.event.receipt.payment.PaymentSelectedEvent;
 import ru.evotor.framework.core.action.event.receipt.payment.PaymentSelectedEventProcessor;
 import ru.evotor.framework.core.action.event.receipt.payment.PaymentSelectedEventResult;

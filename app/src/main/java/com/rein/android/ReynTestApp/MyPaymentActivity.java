@@ -1,4 +1,5 @@
 package com.rein.android.ReynTestApp;
+
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -29,26 +30,11 @@ public class MyPaymentActivity extends IntegrationActivity {
         String Receipt_uuid = ReceiptApi.getReceipt(this, Receipt.Type.SELL).getHeader().getUuid();
         Toast.makeText(this, Receipt_uuid, Toast.LENGTH_LONG).show();
 
-        StringBuilder rrn = new StringBuilder();
-        Random random = new Random();
-        for (int i = 0; i < 10; i++)
-            rrn.append(random.nextInt(10));
-        //Текст, который будет напечатан на чеке в двух экземплярах
-        List<String> slip = new ArrayList<>();
-        slip.add("SLIP START");
-        slip.add("RRN:");
-        final String strUuidOperation = rrn.toString();
-        slip.add(strUuidOperation);
-        slip.add("SLIP END");
-        setIntegrationResult(new PaymentSystemPaymentOkResult(rrn.toString(), slip, "", PaymentType.ELECTRON));
-        finish();
 
         //В случае успешной обработки события служба должна возвращать результат PaymentSystemPaymentOkResult
         findViewById(R.id.btnOk).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                //Уникальный идентификатор платежа, который понадобится при отмене транзакции
                 StringBuilder rrn = new StringBuilder();
                 Random random = new Random();
                 for (int i = 0; i < 10; i++)
@@ -59,8 +45,10 @@ public class MyPaymentActivity extends IntegrationActivity {
                 slip.add("RRN:");
                 final String strUuidOperation = rrn.toString();
                 slip.add(strUuidOperation);
+                slip.add(getIntent().getIntExtra("ReceiptSum", 0) / 100 + "Рублей");
+                slip.add(getIntent().getIntExtra("ReceiptSum", 0) % 100 + "Копеек");
                 slip.add("SLIP END");
-                setIntegrationResult(new PaymentSystemPaymentOkResult(strUuidOperation, slip, "Сумма платежа", PaymentType.ELECTRON));
+                setIntegrationResult(new PaymentSystemPaymentOkResult(strUuidOperation, slip, "", PaymentType.ELECTRON));
                 finish();
             }
         });
