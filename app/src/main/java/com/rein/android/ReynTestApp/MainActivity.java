@@ -408,7 +408,7 @@ public class MainActivity extends IntegrationActivity {
         payments.put(payment1, new BigDecimal(1000));
 
         Purchaser purchaser = new Purchaser("Иванов Иван", null, new Date(),
-                DocumentType.PASSPORT_RF,"4511161107", PurchaserType.NATURAL_PERSON);
+                DocumentType.PASSPORT_RF, "4511161107", PurchaserType.NATURAL_PERSON);
 
         PrintGroup printGroup = new PrintGroup(UUID.randomUUID().toString(),
                 PrintGroup.Type.CASH_RECEIPT, null, null, null,
@@ -506,17 +506,17 @@ public class MainActivity extends IntegrationActivity {
         SetExtra extra = new SetExtra(object);
 
         //Открытие чека продажи. Передаются: список наименований, дополнительные поля для приложения
-        new OpenSellReceiptCommand(positionAddList, null, null).process(this, future -> {
+//        new OpenSellReceiptCommand(positionAddList, null, null).process(this, future -> {
+//
+//            try {
+//                IntegrationManagerFuture.Result result = future.getResult();
+//                if (result.getType() == IntegrationManagerFuture.Result.Type.OK) {
+//
+//                    startActivity(new Intent("evotor.intent.action.payment.SELL"));
+        //startActivity(NavigationApi.createIntentForSellReceiptEdit(false));
 
-            try {
-                IntegrationManagerFuture.Result result = future.getResult();
-                if (result.getType() == IntegrationManagerFuture.Result.Type.OK) {
 
-                    startActivity(new Intent("evotor.intent.action.payment.SELL"));
-                    //startActivity(NavigationApi.createIntentForSellReceiptEdit(false));
-
-
-                    ////////////////////SellAPI////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ////////////////////SellAPI////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //                        PaymentPerformer creditPaymentPerformer = new PaymentPerformer(
 //                                new PaymentSystem(
@@ -541,49 +541,49 @@ public class MainActivity extends IntegrationActivity {
 //                            }
 //                        });
 
-                    //Получаем текущий открытый чек.
-                    Receipt receipt = ReceiptApi.getReceipt(MainActivity.this, Receipt.Type.SELL);
-                    if (receipt == null) return;
-                    //Получаем идентификатор чека.
-                    String uuid = receipt.getHeader().getUuid();
-                    if (uuid == null) return;
-                    //Создаём список всех компонентов, способных выполнить оплату.
-                    List<PaymentPerformer> paymentPerformers = PaymentPerformerApi.INSTANCE.getAllPaymentPerformers(getPackageManager());
-                    AlertDialog.Builder builderSingle = new AlertDialog.Builder(MainActivity.this);
+        //Получаем текущий открытый чек.
+        Receipt receipt = ReceiptApi.getReceipt(MainActivity.this, Receipt.Type.SELL);
+        if (receipt == null) return;
+        //Получаем идентификатор чека.
+        String uuid = receipt.getHeader().getUuid();
+        if (uuid == null) return;
+        //Создаём список всех компонентов, способных выполнить оплату.
+        List<PaymentPerformer> paymentPerformers = PaymentPerformerApi.INSTANCE.getAllPaymentPerformers(getPackageManager());
+        AlertDialog.Builder builderSingle = new AlertDialog.Builder(MainActivity.this);
 
-                    //Показываем пользователю диалоговое окно с возможностью выбрать исполнителя платежа, например, Наличными или Банковской картой.
-                    final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.select_dialog_singlechoice);
-                    for (int i = 0; i < paymentPerformers.size(); i++) {
-                        arrayAdapter.add(paymentPerformers.get(i).getPaymentSystem().getUserDescription());
+        //Показываем пользователю диалоговое окно с возможностью выбрать исполнителя платежа, например, Наличными или Банковской картой.
+        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.select_dialog_singlechoice);
+        for (int i = 0; i < paymentPerformers.size(); i++) {
+            arrayAdapter.add(paymentPerformers.get(i).getPaymentSystem().getUserDescription());
+        }
+
+        builderSingle.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+            @Override
+            //По выбору пользователя выполняем оплату и печатаем чек.
+            public void onClick(DialogInterface dialog, int which) {
+                SellApi.moveCurrentReceiptDraftToPaymentStage(MainActivity.this, paymentPerformers.get(which), new ReceiptFormationCallback() {
+                    @Override
+                    public void onSuccess() {
+                        Toast.makeText(MainActivity.this, "Оплата прошла успешно", Toast.LENGTH_LONG).show();
                     }
 
-                    builderSingle.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
-                        @Override
-                        //По выбору пользователя выполняем оплату и печатаем чек.
-                        public void onClick(DialogInterface dialog, int which) {
-                            SellApi.moveCurrentReceiptDraftToPaymentStage(MainActivity.this, paymentPerformers.get(which), new ReceiptFormationCallback() {
-                                @Override
-                                public void onSuccess() {
-                                    Toast.makeText(MainActivity.this, "Оплата прошла успешно", Toast.LENGTH_LONG).show();
-                                }
-
-                                @Override
-                                public void onError(ReceiptFormationException e) {
-                                    Toast.makeText(MainActivity.this, e.getCode() + " " + e.getMessage(), Toast.LENGTH_LONG).show();
-                                }
-                            });
-                        }
-                    });
-                    builderSingle.show();
-
-                    //////////////////////////SellAPI////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-                }
-            } catch (IntegrationException e) {
-                e.printStackTrace();
+                    @Override
+                    public void onError(ReceiptFormationException e) {
+                        Toast.makeText(MainActivity.this, e.getCode() + " " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
             }
         });
+        builderSingle.show();
+
+        //////////////////////////SellAPI////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//                }
+//            } catch (IntegrationException e) {
+//                e.printStackTrace();
+//            }
+//        });
     }
 
     public void trustAllCertificates() {
