@@ -37,9 +37,8 @@
         <receiver
             android:name=".MySellReceiver"
             android:enabled="false"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
-                <action android:name="evotor.intent.action.receipt.sell.OPENED" />
                 <action android:name="evotor.intent.action.receipt.sell.RECEIPT_CLOSED" />
             </intent-filter>
         </receiver>
@@ -59,7 +58,7 @@
 
         <service
             android:name=".MyPaymentService"
-            android:enabled="true"
+            android:enabled="false"
             android:exported="true"
             android:icon="@android:drawable/ic_dialog_map"
             >
@@ -69,6 +68,9 @@
             <meta-data
                 android:name="ru.evotor.paymentSystem.PAYMENT_SYSTEM_ID"
                 android:value="com.rein.android.ReynTestApp" />
+            <meta-data
+                  android:name="ru.evotor.paymentSystem.ui.SELL"
+                  android:value="true" />
 
             <intent-filter>
                 <action android:name="evo.v2.receipt.paymentSystem" />
@@ -86,14 +88,12 @@
 
         <service
             android:name=".MyDiscountService"
-            android:enabled="true"
+            android:enabled="false"
             android:exported="true">
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT" />
 
                 <action android:name="evo.v2.receipt.sell.receiptDiscount" />
-                <!-- Подписывает службу на событие ReceiptDiscountEvent и указывает смарт-терминалу отображать иконку приложения на экране оплаты чека возврата. -->
-                <action android:name="evo.v2.receipt.payback.receiptDiscount" />
             </intent-filter>
         </service>
 
@@ -117,7 +117,7 @@
             android:theme="@style/Theme.AppCompat.NoActionBar" />
 
         <service
-            android:name=".SplitPaymentService"
+            android:name=".printGroups.SplitPaymentService"
             android:enabled="false"
             android:exported="true">
             <intent-filter>
@@ -131,7 +131,8 @@
 
         <receiver
             android:name=".PushReceiver"
-            android:enabled="true"
+            android:enabled="false"
+            android:exported="true"
             android:permission="ru.evotor.pushnotifications.PUSH_SENDER">
             <intent-filter>
                 <action android:name="ru.evotor.pushnotifications.PUSH_RECEIVED_EVENT" />
@@ -165,11 +166,10 @@
             </intent-filter>
         </service>
         <service
-            android:name=".SplitReceiptWithPrintGroupsService"
+            android:name=".printGroups.SplitReceiptWithPrintGroupsService"
             android:enabled="false"
             android:exported="true">
             <intent-filter>
-
                 <!-- будет напечатан чек продажи -->
                 <action android:name="evo.v2.receipt.sell.printGroup.REQUIRED" />
                 <!-- будет напечатан чек возврата -->

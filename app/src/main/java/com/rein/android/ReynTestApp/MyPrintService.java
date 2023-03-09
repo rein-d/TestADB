@@ -50,16 +50,8 @@ import static ru.evotor.devices.commons.Constants.DEFAULT_DEVICE_INDEX;
 
 
 public class MyPrintService extends IntegrationService {
-    /**
-     * Получение картинки из каталога asset приложения
-     *
-     * @param fileName имя файла
-     * @return значение типа Bitmap
-     */
 
     private static final String TAG = "MyApp123";
-    public static final Locale LOCALE_DEC = Locale.US;
-    private DecimalFormat mDecimalFormat = new DecimalFormat("0.00", DecimalFormatSymbols.getInstance(LOCALE_DEC));
 
     @Nullable
     @Override
@@ -71,9 +63,6 @@ public class MyPrintService extends IntegrationService {
                     @Override
                     public void call(@NotNull String s, @NotNull PrintExtraRequiredEvent printExtraRequiredEvent, @NotNull Callback callback) {
                         List<SetPrintExtra> setPrintExtras = new ArrayList<>();
-                        Receipt MyReceipt124 = ReceiptApi.getReceipt(MyPrintService.this, Receipt.Type.SELL);
-                        Log.d(TAG, "Uuid чека: "+MyReceipt124.getHeader().getNumber());
-
                         setPrintExtras.add(new SetPrintExtra(
                                 //Метод, который указывает место, где будут распечатаны данные.
                                 //Данные печатаются после клише и до текста “Кассовый чек”
@@ -83,42 +72,52 @@ public class MyPrintService extends IntegrationService {
                                         //Простой текст
                                         new PrintableText("Proin eget tortor risus. Nulla quis lorem ut libero malesuada feugiat. Proin eget tortor risus."),
                                         //Штрихкод с контрольной суммой если она требуется для выбранного типа штрихкода
-                                       // new PrintableBarcode("4750232005910", PrintableBarcode.BarcodeType.EAN13),
+                                        new PrintableBarcode("4750232005910", PrintableBarcode.BarcodeType.EAN13),
                                         //Изображение
-                                       // new PrintableImage(getBitmapFromAsset("ic_launcher.png"))
+                                        //new PrintableImage(getBitmapFromAsset("ic_launcher.png"))
                                 }
                         ));
                         setPrintExtras.add(new SetPrintExtra(
                                 //Данные печатаются после текста “Кассовый чек”, до имени пользователя
                                 new PrintExtraPlacePrintGroupHeader(null),
                                 new IPrintable[]{
-                                        //new PrintableBarcode("4750232005910", PrintableBarcode.BarcodeType.EAN13),
-                                        //new PrintableText("Proin eget tortor risus. Nulla quis lorem ut libero malesuada feugiat. Proin eget tortor risus.")
+                                        new PrintableBarcode("4750232005910", PrintableBarcode.BarcodeType.EAN13),
+                                        new PrintableText("Proin eget tortor risus. Nulla quis lorem ut libero malesuada feugiat. Proin eget tortor risus.")
                                 }
                         ));
                         //Добавляем к каждой позиции чека продажи необходимые данные
                         Receipt r = ReceiptApi.getReceipt(MyPrintService.this, Receipt.Type.SELL);
                         if (r != null) {
-                            BigDecimal discount = r.getDiscount();
-                            if (!BigDecimal.ZERO.equals(discount)) {
-                                int width = 0;
-                                try {
-                                    width = DeviceServiceConnector.getPrinterService().getAllowableSymbolsLineLength(DEFAULT_DEVICE_INDEX);
-                                } catch (Throwable e) {
-
-                                }
-
-                                StringBuilder resultDiscount = getString(discount, width, "СКИДКА НА ЧЕК");
+                            setPrintExtras.add(new SetPrintExtra(
+                                    //Данные печатаются после итога и списка оплат, до текста “всего оплачено”
+                                    new PrintExtraPlacePrintGroupSummary(null),
+                                    new IPrintable[]{
+                                            new PrintableText("EXTRA:" + r.getHeader().getExtra()),
+                                            new PrintableBarcode("4750232005910", PrintableBarcode.BarcodeType.EAN13),
+                                            new PrintableText("Proin eget tortor risus. Nulla quis lorem ut libero malesuada feugiat. Proin eget tortor risus.")
+                                    }
+                            ));
+                            for (Position p : r.getPositions()) {
+                                List<ExtraKey> list = new ArrayList<>(p.getExtraKeys());
                                 setPrintExtras.add(new SetPrintExtra(
-                                        new PrintExtraPlacePrintGroupSummary(null),
+                                        //Данные печатаются в позиции в чеке, до подпозиций
+                                        new PrintExtraPlacePositionFooter(p.getUuid()),
                                         new IPrintable[]{
-                                             //  new PrintableText(resultSum.toString()),
-                                                new PrintableText(resultDiscount.toString())
+                                                new PrintableBarcode("4750232005910", PrintableBarcode.BarcodeType.EAN13),
+                                                new PrintableText("UUID:" + p.getUuid() + "\n EXTRA:" + (list.size() > 0 ? list.get(0).getDescription() : ""))
                                         }
                                 ));
+                                setPrintExtras.add(new SetPrintExtra(
+                                        //Данные печатаются в позиции в чеке, после всех подпозиций
+                                        new PrintExtraPlacePositionAllSubpositionsFooter(p.getUuid()),
+                                        new IPrintable[]{
+                                                new PrintableBarcode("4750232005910", PrintableBarcode.BarcodeType.EAN13),
+                                                new PrintableText("<Текст>\n" + p.getUuid() + "\n<Текст>")
+                                        }
+                                ));
+
                             }
                         }
-
                         try {
                             callback.onResult(new PrintExtraRequiredEventResult(setPrintExtras).toBundle());
                         } catch (RemoteException exc) {
@@ -126,40 +125,7 @@ public class MyPrintService extends IntegrationService {
                         }
                     }
                 }
-
         );
         return map;
-    }
-    @NonNull
-    private StringBuilder getString(BigDecimal discount, int width, String text) {
-        StringBuilder resultDiscount = new StringBuilder("=")
-                .append(mDecimalFormat.format(discount)
-                        .replaceAll(",", "."));
-        if (width > 0) {
-            int spacesLength = width - resultDiscount.length() - text.length();
-            for (int i = 0; i < spacesLength; i++) {
-                resultDiscount.insert(0, " ");
-            }
-            resultDiscount.insert(0, text);
-        } else {
-            resultDiscount.insert(0, text + " ");
-        }
-        return resultDiscount;
-    }
-
-    @NonNull
-    private StringBuilder getSumString(double price, int width, String text) {
-        StringBuilder resultDiscount = new StringBuilder("=")
-                .append(mDecimalFormat.format(price).replaceAll(",", "."));
-        if (width > 0) {
-            int spacesLength = width - resultDiscount.length() - text.length();
-            for (int i = 0; i < spacesLength; i++) {
-                resultDiscount.insert(0, " ");
-            }
-            resultDiscount.insert(0, text);
-        } else {
-            resultDiscount.insert(0, text + " ");
-        }
-        return resultDiscount;
     }
 }
