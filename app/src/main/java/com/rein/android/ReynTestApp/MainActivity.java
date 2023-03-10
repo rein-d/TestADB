@@ -112,7 +112,8 @@ public class MainActivity extends IntegrationActivity {
         });
 
         findViewById(R.id.WebViewButton).setOnClickListener(view -> {
-
+            startActivityForResult(NavigationApi.createIntentForSellReceiptEdit(true),
+                    1);
             Log.v(TAG, "Hello this is log");
 //            List<TaxationSystem> taxSystems = getFsDoc(getApplicationContext());
 //
